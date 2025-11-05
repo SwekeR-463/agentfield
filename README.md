@@ -2,7 +2,7 @@
 
 # Haxen
 
-**The control plane that runs AI agents like microservices—REST/gRPC by default, streaming & async built-in, cryptographic identity for all agents.**
+**A Kubernetes-style control plane that runs AI agents like microservices: REST/gRPC APIs, async webhooks, and cryptographic identity for every agent and execution.**
 
 Write agents. Haxen deploys, scales, observes, and proves what happened.
 
@@ -106,14 +106,14 @@ Agent frameworks are great for **prototypes**. Haxen builds agents **and** runs 
 
 ### What Hurts Today → What Haxen Does Automatically
 
-| 🔴 **Without Haxen** | 🟢 **With Haxen** |
-|---------------------|-----------------|
-| **Monolithic deployments** — one team's change forces everyone to redeploy | **Independent deployment** — teams ship agents on their own schedule, zero coordination |
-| **No native APIs** — your React app needs custom wrappers to call agents | **REST & OpenAPI by default** (gRPC optional) — every function is an endpoint, auto-documented |
-| **Manual orchestration** — you build queues, state management, agent coordination from scratch | **Auto-orchestration** — agents call each other, workflows track automatically, shared memory (Global/Agent/Session/Run scopes) syncs state |
-| **No observability** — grep logs from 5 services to debug multi-agent flows | **Built-in observability** — workflow DAGs (UI), execution traces, agent notes, Prometheus metrics (`/metrics` per agent, labeled by agent/version/run_id) |
-| **DIY infrastructure** — you're building webhooks, SSE, async queues, health checks, retries yourself | **Production infrastructure** — durable queues, webhook delivery (HMAC-signed), SSE streaming, graceful shutdown, K8s-ready health checks |
-| **No identity or audit** — logs can be edited, screenshots faked, compliance teams need cryptographic proof | **Cryptographic identity** — W3C DIDs (`did:web` or `did:key`) for every agent, W3C Verifiable Credentials (JSON-LD) for tamper-proof audit trails |
+| 🔴 **Without Haxen**                                                                                         | 🟢 **With Haxen**                                                                                                                                           |
+| ----------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Monolithic deployments** — one team's change forces everyone to redeploy                                  | **Independent deployment** — teams ship agents on their own schedule, zero coordination                                                                    |
+| **No native APIs** — your React app needs custom wrappers to call agents                                    | **REST & OpenAPI by default** (gRPC optional) — every function is an endpoint, auto-documented                                                             |
+| **Manual orchestration** — you build queues, state management, agent coordination from scratch              | **Auto-orchestration** — agents call each other, workflows track automatically, shared memory (Global/Agent/Session/Run scopes) syncs state                |
+| **No observability** — grep logs from 5 services to debug multi-agent flows                                 | **Built-in observability** — workflow DAGs (UI), execution traces, agent notes, Prometheus metrics (`/metrics` per agent, labeled by agent/version/run_id) |
+| **DIY infrastructure** — you're building webhooks, SSE, async queues, health checks, retries yourself       | **Production infrastructure** — durable queues, webhook delivery (HMAC-signed), SSE streaming, graceful shutdown, K8s-ready health checks                  |
+| **No identity or audit** — logs can be edited, screenshots faked, compliance teams need cryptographic proof | **Cryptographic identity** — W3C DIDs (`did:web` or `did:key`) for every agent, W3C Verifiable Credentials (JSON-LD) for tamper-proof audit trails         |
 
 ### The Analogy
 
@@ -211,14 +211,14 @@ Haxen **is** the infrastructure you'd otherwise spend 3 months building.
 
 **Deploy AI agents like microservices—independent, discoverable, language-agnostic.**
 
-| Feature | What It Does |
-|---------|--------------|
-| **REST & OpenAPI by default** (gRPC optional) | Every agent function becomes an endpoint automatically |
-| **Real-time streaming (SSE)** | Frontends get live updates as workflows execute; see [React example](#real-time-streaming) |
-| **Async execution** | Long-running tasks (5+ min) run in durable queues; webhook callbacks when done (HMAC-signed, 6 retries) |
-| **Agent-to-agent calls** | `await agent.call("other-agent.function")` — control plane routes automatically |
-| **Shared memory** | Zero-config state: Global → Agent → Session → Run scopes (automatic syncing) |
-| **Language-agnostic** | Python SDK, Go SDK, or implement REST/gRPC protocol directly in any language |
+| Feature                                       | What It Does                                                                                            |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| **REST & OpenAPI by default** (gRPC optional) | Every agent function becomes an endpoint automatically                                                  |
+| **Real-time streaming (SSE)**                 | Frontends get live updates as workflows execute; see [React example](#real-time-streaming)              |
+| **Async execution**                           | Long-running tasks (5+ min) run in durable queues; webhook callbacks when done (HMAC-signed, 6 retries) |
+| **Agent-to-agent calls**                      | `await agent.call("other-agent.function")` — control plane routes automatically                         |
+| **Shared memory**                             | Zero-config state: Global → Agent → Session → Run scopes (automatic syncing)                            |
+| **Language-agnostic**                         | Python SDK, Go SDK, or implement REST/gRPC protocol directly in any language                            |
 
 ...and many more !
 
@@ -228,15 +228,15 @@ Haxen **is** the infrastructure you'd otherwise spend 3 months building.
 
 **Production-grade observability, scaling, and reliability—no instrumentation required.**
 
-| Feature | What It Does |
-|---------|--------------|
-| **Workflow DAGs** | Visual execution graphs (auto-generated in UI); see exactly which agent called which and when |
+| Feature                | What It Does                                                                                                                                                                                             |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Workflow DAGs**      | Visual execution graphs (auto-generated in UI); see exactly which agent called which and when                                                                                                            |
 | **Prometheus metrics** | Automatic `/metrics` endpoint per agent and control plane, labeled by `agent`, `version`, `run_id`; request rates, latencies, errors (injected via control plane proxy—agents need zero instrumentation) |
-| **Durable queues** | PostgreSQL `FOR UPDATE SKIP LOCKED` lease-based processing; survives crashes, fair scheduling, backpressure |
-| **Health checks** | `/health/live` and `/health/ready` for Kubernetes liveness/readiness probes |
-| **Horizontal scaling** | Stateless control plane scales horizontally; scale individual agent nodes independently (`kubectl scale deployment my-agent --replicas=10`) |
-| **Graceful shutdown** | Completes in-flight work before exit; no dropped tasks |
-| **Auto-retries** | Failed executions retry with exponential backoff (configurable) |
+| **Durable queues**     | PostgreSQL `FOR UPDATE SKIP LOCKED` lease-based processing; survives crashes, fair scheduling, backpressure                                                                                              |
+| **Health checks**      | `/health/live` and `/health/ready` for Kubernetes liveness/readiness probes                                                                                                                              |
+| **Horizontal scaling** | Stateless control plane scales horizontally; scale individual agent nodes independently (`kubectl scale deployment my-agent --replicas=10`)                                                              |
+| **Graceful shutdown**  | Completes in-flight work before exit; no dropped tasks                                                                                                                                                   |
+| **Auto-retries**       | Failed executions retry with exponential backoff (configurable)                                                                                                                                          |
 
 **How Prometheus metrics are injected:** The control plane acts as a reverse proxy for agent traffic. All agent-to-agent calls and executions flow through the control plane, which records latency, error rates, and throughput **without requiring agents to instrument their code**. Metrics are exposed at `/metrics` in Prometheus format.
 
@@ -246,14 +246,14 @@ Haxen **is** the infrastructure you'd otherwise spend 3 months building.
 
 **Cryptographic proof for compliance—tamper-proof, exportable, verifiable offline.**
 
-| Feature | What It Does |
-|---------|--------------|
-| **W3C DIDs** | Every agent gets a Decentralized Identifier (`did:web` or `did:key`); cryptographic identity for non-repudiation |
-| **W3C Verifiable Credentials** | Opt-in per agent; each execution generates a VC (JSON-LD format) with signed input/output hashes |
-| **Tamper-proof audit trails** | Export full VC chains for regulators; verify offline with `haxen verify audit.json` (no access to your systems needed) |
-| **Non-repudiation** | Agents cryptographically sign decisions; can't deny their actions |
-| **Policy engine** | Define rules for which executions require VCs (e.g., "all financial decisions > $10K") |
-| **Export formats** | W3C VC JSON-LD (standard); import into compliance tools |
+| Feature                        | What It Does                                                                                                           |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| **W3C DIDs**                   | Every agent gets a Decentralized Identifier (`did:web` or `did:key`); cryptographic identity for non-repudiation       |
+| **W3C Verifiable Credentials** | Opt-in per agent; each execution generates a VC (JSON-LD format) with signed input/output hashes                       |
+| **Tamper-proof audit trails**  | Export full VC chains for regulators; verify offline with `haxen verify audit.json` (no access to your systems needed) |
+| **Non-repudiation**            | Agents cryptographically sign decisions; can't deny their actions                                                      |
+| **Policy engine**              | Define rules for which executions require VCs (e.g., "all financial decisions > $10K")                                 |
+| **Export formats**             | W3C VC JSON-LD (standard); import into compliance tools                                                                |
 
 **Example: Enable for a specific agent**
 ```python

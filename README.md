@@ -156,9 +156,6 @@ Haxen **is** the infrastructure you'd otherwise spend 3 months building.
 ```bash
 # macOS/Linux
 curl -fsSL https://haxen.ai/install.sh | bash
-
-# Or with Go
-go install github.com/agentfield/haxen/cmd/haxen@latest
 ```
 
 ### Create Your First Multi-Agent System

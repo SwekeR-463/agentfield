@@ -3,16 +3,17 @@ version: 2
 
 project_name: agentfield
 
-# Note: Web UI build is handled by GitHub Actions workflow before GoReleaser runs
-# This improves caching and allows for better parallelization
+before:
+  hooks:
+    - cd control-plane/web/client && npm install --silent && npm run build --silent
 
 builds:
   - id: agentfield
     dir: control-plane
     main: ./cmd/af
-    binary: agentfield-{{ .Os }}-{{ .Arch }}
+    binary: agentfield
     env:
-      - CGO_ENABLED=0
+      - CGO_ENABLED=1
     goos:
       - linux
       - darwin
@@ -30,12 +31,14 @@ builds:
       - -X main.date={{ .Date }}
     tags:
       - embedded
+      - sqlite_fts5
     no_unique_dist_dir: true
 
 # Don't create archives - ship raw binaries
 archives:
   - id: default
     format: binary
+    name_template: "agentfield-{{ .Os }}-{{ .Arch }}"
 
 checksum:
   name_template: "checksums.txt"

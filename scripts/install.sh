@@ -231,13 +231,30 @@ install_binary() {
   cp "$binary_path" "$install_dir/agentfield"
   chmod +x "$install_dir/agentfield"
 
+  # Create af symlink for convenience (best effort)
+  local symlink_created=0
+  if ln -sf "$install_dir/agentfield" "$install_dir/af"; then
+    symlink_created=1
+    print_verbose "Created symlink: af -> agentfield"
+  else
+    print_warning "Could not create af symlink; ensure filesystem supports symlinks"
+  fi
+
   # On macOS, remove quarantine attribute
   if [[ "$(detect_os)" == "darwin" ]]; then
     print_verbose "Removing macOS quarantine attribute..."
     xattr -d com.apple.quarantine "$install_dir/agentfield" 2>/dev/null || true
+    if [[ "$symlink_created" -eq 1 ]]; then
+      xattr -d com.apple.quarantine "$install_dir/af" 2>/dev/null || true
+    fi
   fi
 
   print_success "Binary installed to $install_dir/agentfield"
+  if [[ "$symlink_created" -eq 1 ]]; then
+    print_success "Symlink created: $install_dir/af"
+  else
+    print_info "You can create a manual shortcut named 'af' pointing to $install_dir/agentfield if desired."
+  fi
 }
 
 # Configure PATH

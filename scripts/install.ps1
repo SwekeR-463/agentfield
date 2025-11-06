@@ -203,7 +203,40 @@ function Install-Binary {
     $targetPath = Join-Path $InstallDir "agentfield.exe"
     Copy-Item -Path $BinaryPath -Destination $targetPath -Force
 
+    # Create af.exe alias for convenience (prefer hardlink, fallback to copy)
+    $afPath = Join-Path $InstallDir "af.exe"
+    $aliasCreated = $false
+    $aliasMethod = ""
+
+    try {
+        if (Test-Path $afPath) {
+            Remove-Item -Path $afPath -Force
+        }
+        New-Item -ItemType HardLink -Path $afPath -Target $targetPath -Force | Out-Null
+        $aliasCreated = $true
+        $aliasMethod = "hardlink"
+        Write-Verbose "Created hardlink: af.exe -> agentfield.exe"
+    }
+    catch {
+        Write-Verbose "Hardlink creation failed, falling back to copy: $($_.Exception.Message)"
+        try {
+            Copy-Item -Path $targetPath -Destination $afPath -Force
+            $aliasCreated = $true
+            $aliasMethod = "copy"
+            Write-Verbose "Created copy: af.exe"
+        }
+        catch {
+            Write-Warning "Failed to create af.exe alias: $($_.Exception.Message)"
+        }
+    }
+
     Write-Success "Binary installed to $targetPath"
+    if ($aliasCreated) {
+        Write-Success "Alias created ($aliasMethod): $afPath"
+    }
+    else {
+        Write-Info "Alias not created; run agentfield using $targetPath or create your own shortcut."
+    }
 }
 
 # Configure PATH

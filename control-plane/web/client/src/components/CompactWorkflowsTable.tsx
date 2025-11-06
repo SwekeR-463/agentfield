@@ -23,6 +23,7 @@ import {
 import { CompactTable } from "./ui/CompactTable";
 import { FastTableSearch, createSearchMatcher } from "./ui/FastTableSearch";
 import { normalizeExecutionStatus } from "../utils/status";
+import { formatNumber } from "../utils/numberFormat";
 
 // Compact grid layout for workflows including selection checkbox
 const GRID_TEMPLATE = "40px 140px minmax(200px,1fr) 160px 70px 80px 64px 110px 60px";
@@ -102,7 +103,9 @@ function WorkflowHoverCard({
           <div className="grid grid-cols-3 gap-3 text-xs">
             <div>
               <span className="text-muted-foreground">Executions:</span>
-              <div className="font-medium">{workflow.total_executions}</div>
+              <div className="font-medium" title={workflow.total_executions.toLocaleString()}>
+                {formatNumber(workflow.total_executions)}
+              </div>
             </div>
             <div>
               <span className="text-muted-foreground">Max Depth:</span>
@@ -117,15 +120,21 @@ function WorkflowHoverCard({
           <div className="grid grid-cols-3 gap-3 text-xs">
             <div>
               <span className="text-muted-foreground">Active:</span>
-              <div className="font-medium">{activeExecutions}</div>
+              <div className="font-medium" title={activeExecutions.toLocaleString()}>
+                {formatNumber(activeExecutions)}
+              </div>
             </div>
             <div>
               <span className="text-muted-foreground">Succeeded:</span>
-              <div className="font-medium">{statusCounts.succeeded ?? 0}</div>
+              <div className="font-medium" title={(statusCounts.succeeded ?? 0).toLocaleString()}>
+                {formatNumber(statusCounts.succeeded ?? 0)}
+              </div>
             </div>
             <div>
               <span className="text-muted-foreground">Failed:</span>
-              <div className="font-medium text-destructive">{failedExecutions}</div>
+              <div className="font-medium text-destructive" title={failedExecutions.toLocaleString()}>
+                {formatNumber(failedExecutions)}
+              </div>
             </div>
           </div>
 
@@ -336,8 +345,8 @@ export function CompactWorkflowsTable({
           // For active workflows, prioritize showing active count
           if (active > 0) {
             return {
-              primary: `${active} active`,
-              secondary: failed > 0 ? `${failed} issue${failed === 1 ? '' : 's'}` : null,
+              primary: `${formatNumber(active)} active`,
+              secondary: failed > 0 ? `${formatNumber(failed)} issue${failed === 1 ? '' : 's'}` : null,
               primaryClass: "status-active",
               secondaryClass: "status-issues"
             };
@@ -346,7 +355,7 @@ export function CompactWorkflowsTable({
           // For failed workflows, show issues
           if (failed > 0) {
             return {
-              primary: `${failed} issue${failed === 1 ? '' : 's'}`,
+              primary: `${formatNumber(failed)} issue${failed === 1 ? '' : 's'}`,
               secondary: null,
               primaryClass: "status-issues",
               secondaryClass: ""
@@ -356,7 +365,7 @@ export function CompactWorkflowsTable({
           // For completed workflows, show completion count
           if (normalized === "succeeded" && succeeded > 0) {
             return {
-              primary: `${succeeded} completed`,
+              primary: `${formatNumber(succeeded)} completed`,
               secondary: null,
               primaryClass: "status-completed",
               secondaryClass: ""
@@ -446,8 +455,8 @@ export function CompactWorkflowsTable({
       sortable: true,
       align: "right" as const,
       render: (workflow: WorkflowSummary) => (
-        <span className="text-primary-foundation font-medium">
-          {workflow.total_executions}
+        <span className="text-primary-foundation font-medium" title={workflow.total_executions.toLocaleString()}>
+          {formatNumber(workflow.total_executions)}
         </span>
       ),
     },

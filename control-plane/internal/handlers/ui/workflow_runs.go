@@ -92,6 +92,7 @@ func (h *WorkflowRunHandler) ListWorkflowRunsHandler(c *gin.Context) {
 	pageSize := parsePositiveIntWithin(c.DefaultQuery("page_size", "20"), 20, 1, 200)
 	offset := (page - 1) * pageSize
 
+	// Build filter for run aggregation query
 	filter := types.ExecutionFilter{
 		Limit:          pageSize,
 		Offset:         offset,
@@ -117,23 +118,24 @@ func (h *WorkflowRunHandler) ListWorkflowRunsHandler(c *gin.Context) {
 		}
 	}
 
-	executions, err := h.storage.QueryExecutionRecords(ctx, filter)
+	// Use the efficient aggregation method that scales to millions of nodes
+	runAggregations, err := h.storage.QueryRunSummaries(ctx, filter)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to query executions"})
+		// Log the actual error for debugging
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "failed to query run summaries",
+			"details": err.Error(),
+		})
 		return
 	}
 
-	grouped := types.GroupExecutionsByRun(executions)
-	summaries := make([]WorkflowRunSummary, 0, len(grouped))
-	for runID, execs := range grouped {
-		summaries = append(summaries, summarizeRun(runID, execs))
+	// Convert aggregations to API response format
+	summaries := make([]WorkflowRunSummary, 0, len(runAggregations))
+	for _, agg := range runAggregations {
+		summaries = append(summaries, convertAggregationToSummary(agg))
 	}
 
-	sort.Slice(summaries, func(i, j int) bool {
-		return summaries[i].StartedAt.After(summaries[j].StartedAt)
-	})
-
-	hasMore := len(executions) == pageSize
+	hasMore := len(runAggregations) == pageSize
 
 	response := WorkflowRunListResponse{
 		Runs:       summaries,
@@ -144,6 +146,90 @@ func (h *WorkflowRunHandler) ListWorkflowRunsHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, response)
+}
+
+// convertAggregationToSummary converts a storage.RunSummaryAggregation to WorkflowRunSummary
+func convertAggregationToSummary(agg *storage.RunSummaryAggregation) WorkflowRunSummary {
+	summary := WorkflowRunSummary{
+		WorkflowID:       agg.RunID,
+		RunID:            agg.RunID,
+		StatusCounts:     agg.StatusCounts,
+		TotalExecutions:  agg.TotalExecutions,
+		MaxDepth:         agg.MaxDepth,
+		ActiveExecutions: agg.ActiveExecutions,
+		StartedAt:        agg.EarliestStarted,
+		UpdatedAt:        agg.LatestStarted,
+		LatestActivity:   agg.LatestStarted,
+	}
+
+	// Set root execution ID
+	if agg.RootExecutionID != nil {
+		summary.RootExecutionID = *agg.RootExecutionID
+	}
+
+	// Set display name from root reasoner or run ID
+	if agg.RootReasonerID != nil && *agg.RootReasonerID != "" {
+		summary.DisplayName = *agg.RootReasonerID
+		summary.RootReasoner = *agg.RootReasonerID
+		summary.CurrentTask = *agg.RootReasonerID
+	} else {
+		summary.DisplayName = agg.RunID
+		summary.RootReasoner = agg.RunID
+		summary.CurrentTask = agg.RunID
+	}
+
+	// Set agent ID
+	if agg.RootAgentNodeID != nil && *agg.RootAgentNodeID != "" {
+		summary.AgentID = agg.RootAgentNodeID
+	}
+
+	// Set session and actor IDs
+	summary.SessionID = agg.SessionID
+	summary.ActorID = agg.ActorID
+
+	// Determine overall status
+	summary.Status = deriveStatusFromCounts(agg.StatusCounts, agg.ActiveExecutions)
+
+	// Check if terminal
+	summary.Terminal = summary.Status == string(types.ExecutionStatusSucceeded) ||
+		summary.Status == string(types.ExecutionStatusFailed)
+
+	// Calculate duration if completed
+	if summary.Terminal {
+		completedAt := agg.LatestStarted
+		summary.CompletedAt = &completedAt
+		duration := completedAt.Sub(agg.EarliestStarted).Milliseconds()
+		summary.DurationMs = &duration
+	}
+
+	return summary
+}
+
+// deriveStatusFromCounts determines overall workflow status from status counts
+func deriveStatusFromCounts(statusCounts map[string]int, activeExecutions int) string {
+	// If there are any failed executions, the workflow is failed
+	if statusCounts[string(types.ExecutionStatusFailed)] > 0 {
+		return string(types.ExecutionStatusFailed)
+	}
+
+	// If there are active executions, the workflow is running
+	if activeExecutions > 0 {
+		return string(types.ExecutionStatusRunning)
+	}
+
+	// If all executions succeeded, the workflow succeeded
+	totalSucceeded := statusCounts[string(types.ExecutionStatusSucceeded)]
+	totalAll := 0
+	for _, count := range statusCounts {
+		totalAll += count
+	}
+
+	if totalSucceeded == totalAll && totalAll > 0 {
+		return string(types.ExecutionStatusSucceeded)
+	}
+
+	// Default to succeeded if no active work
+	return string(types.ExecutionStatusSucceeded)
 }
 
 func (h *WorkflowRunHandler) GetWorkflowRunDetailHandler(c *gin.Context) {

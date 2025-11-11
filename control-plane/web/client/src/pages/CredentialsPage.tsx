@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -10,42 +10,74 @@ import {
   Download,
   CheckCircle,
   XCircle,
+  Clock,
   ChevronRight,
   ChevronDown,
 } from "@/components/ui/icon-bridge";
 import { CompactTable } from "@/components/ui/CompactTable";
 import { SearchBar } from "@/components/ui/SearchBar";
-import { PageHeader } from "../components/PageHeader";
+import { Badge } from "@/components/ui/badge";
+import { SegmentedStatusFilter } from "@/components/ui/segmented-status-filter";
+import { TimeRangePills } from "@/components/ui/time-range-pills";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import * as identityApi from "../services/identityApi";
 import type { VCSearchResult } from "../services/identityApi";
 import { formatRelativeTime } from "../utils/dateFormat";
 
 const ITEMS_PER_PAGE = 50;
-const GRID_TEMPLATE = "50px minmax(150px,1fr) minmax(120px,1fr) minmax(150px,1fr) minmax(120px,1fr) 80px";
+const GRID_TEMPLATE = "minmax(110px,0.8fr) minmax(180px,1.5fr) minmax(200px,1.8fr) minmax(160px,1.2fr) minmax(100px,0.7fr) 60px";
 
-// Filter options
+// Helper function to truncate DID smartly
+const truncateDID = (did: string): string => {
+  if (!did || did.length <= 20) return did;
+  const start = did.substring(0, 15);
+  const end = did.substring(did.length - 8);
+  return `${start}...${end}`;
+};
+
+// Time filter options
 const TIME_FILTER_OPTIONS = [
-  { value: "1h", label: "Last Hour" },
-  { value: "24h", label: "Last 24 Hours" },
-  { value: "7d", label: "Last 7 Days" },
-  { value: "30d", label: "Last 30 Days" },
+  { value: "1h", label: "1h" },
+  { value: "24h", label: "24h" },
+  { value: "7d", label: "7d" },
+  { value: "30d", label: "30d" },
+  { value: "custom", label: "Custom" },
   { value: "all", label: "All Time" },
-];
-
-const VERIFICATION_FILTER_OPTIONS = [
-  { value: "all", label: "All" },
-  { value: "verified", label: "Verified Only" },
-  { value: "failed", label: "Failed Only" },
 ];
 
 export function CredentialsPage() {
   const navigate = useNavigate();
 
+  const formatInputValue = useCallback((date: Date) => {
+    const pad = (value: number) => value.toString().padStart(2, "0");
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  }, []);
+
   // State
   const [credentials, setCredentials] = useState<VCSearchResult[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
   const [timeRange, setTimeRange] = useState("24h");
+  const [previousTimeRange, setPreviousTimeRange] = useState("24h");
   const [verificationFilter, setVerificationFilter] = useState("all");
+  const [customRange, setCustomRange] = useState<{ start?: string; end?: string }>({});
+  const [customRangeDraft, setCustomRangeDraft] = useState<{ start?: string; end?: string }>({});
+  const [customRangeError, setCustomRangeError] = useState<string | null>(null);
+  const [showCustomRangeDialog, setShowCustomRangeDialog] = useState(false);
   const [selectedCredential, setSelectedCredential] = useState<VCSearchResult | null>(null);
 
   // Loading states
@@ -60,26 +92,127 @@ export function CredentialsPage() {
   const [error, setError] = useState<string | null>(null);
   const [showVCJson, setShowVCJson] = useState(false);
   const [copiedText, setCopiedText] = useState<string | null>(null);
+  const customRangeAppliedRef = useRef(false);
+
+  useEffect(() => {
+    const handle = window.setTimeout(() => {
+      setDebouncedQuery(searchQuery.trim());
+    }, 350);
+    return () => window.clearTimeout(handle);
+  }, [searchQuery]);
 
   // Compute time range for API
-  const getTimeRangeParams = useCallback((range: string) => {
-    if (range === "all") return {};
+  const getTimeRangeParams = useCallback(
+    (range: string) => {
+      if (range === "all") return {};
+      if (range === "custom") {
+        if (customRange.start && customRange.end) {
+          const startDate = new Date(customRange.start);
+          const endDate = new Date(customRange.end);
+          if (!Number.isNaN(startDate.getTime()) && !Number.isNaN(endDate.getTime())) {
+            return {
+              start_time: startDate.toISOString(),
+              end_time: endDate.toISOString(),
+            };
+          }
+        }
+        return {};
+      }
 
-    const now = new Date();
-    const ranges: Record<string, number> = {
-      "1h": 60 * 60 * 1000,
-      "24h": 24 * 60 * 60 * 1000,
-      "7d": 7 * 24 * 60 * 60 * 1000,
-      "30d": 30 * 24 * 60 * 60 * 1000,
-    };
+      const now = new Date();
+      const ranges: Record<string, number> = {
+        "1h": 60 * 60 * 1000,
+        "24h": 24 * 60 * 60 * 1000,
+        "7d": 7 * 24 * 60 * 60 * 1000,
+        "30d": 30 * 24 * 60 * 60 * 1000,
+      };
 
-    const ms = ranges[range];
-    const startTime = new Date(now.getTime() - ms);
-    return {
-      start_time: startTime.toISOString(),
-      end_time: now.toISOString(),
-    };
-  }, []);
+      const ms = ranges[range];
+      if (!ms) return {};
+      const startTime = new Date(now.getTime() - ms);
+      return {
+        start_time: startTime.toISOString(),
+        end_time: now.toISOString(),
+      };
+    },
+    [customRange]
+  );
+
+  const openCustomRangeDialog = useCallback(() => {
+    setCustomRangeError(null);
+    if (customRange.start && customRange.end) {
+      setCustomRangeDraft({ ...customRange });
+    } else {
+      const now = new Date();
+      const fallbackStart = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+      setCustomRangeDraft({
+        start: formatInputValue(fallbackStart),
+        end: formatInputValue(now),
+      });
+    }
+    setShowCustomRangeDialog(true);
+  }, [customRange, formatInputValue]);
+
+  const handleTimeRangeChange = useCallback(
+    (value: string) => {
+      if (value === "custom") {
+        setPreviousTimeRange((prev) => (timeRange === "custom" ? prev : timeRange));
+        setTimeRange("custom");
+        openCustomRangeDialog();
+        return;
+      }
+      setCustomRange({});
+      setTimeRange(value);
+      setPreviousTimeRange(value);
+    },
+    [openCustomRangeDialog, timeRange]
+  );
+
+  const handleCustomRangeDraftChange = useCallback(
+    (field: "start" | "end", value: string) => {
+      setCustomRangeDraft((prev) => ({
+        ...prev,
+        [field]: value,
+      }));
+    },
+    []
+  );
+
+  const handleCustomRangeApply = useCallback(() => {
+    if (!customRangeDraft.start || !customRangeDraft.end) {
+      setCustomRangeError("Start and end time are required.");
+      return;
+    }
+    const startDate = new Date(customRangeDraft.start);
+    const endDate = new Date(customRangeDraft.end);
+    if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
+      setCustomRangeError("Please provide valid dates.");
+      return;
+    }
+    if (endDate <= startDate) {
+      setCustomRangeError("End time must be after start time.");
+      return;
+    }
+    setCustomRange({ ...customRangeDraft });
+    customRangeAppliedRef.current = true;
+    setShowCustomRangeDialog(false);
+    setCustomRangeError(null);
+    setTimeRange("custom");
+    setPreviousTimeRange("custom");
+  }, [customRangeDraft]);
+
+  useEffect(() => {
+    if (!showCustomRangeDialog) {
+      if (customRangeAppliedRef.current) {
+        customRangeAppliedRef.current = false;
+        return;
+      }
+      setCustomRangeError(null);
+      if (!customRange.start || !customRange.end) {
+        setTimeRange(previousTimeRange);
+      }
+    }
+  }, [customRange, previousTimeRange, showCustomRangeDialog]);
 
   // Fetch credentials
   const fetchCredentials = useCallback(
@@ -93,10 +226,12 @@ export function CredentialsPage() {
         }
 
         const timeParams = getTimeRangeParams(timeRange);
+        const queryParam = debouncedQuery.length > 0 ? debouncedQuery : undefined;
 
         const data = await identityApi.searchCredentials({
           ...timeParams,
-          status: verificationFilter === 'all' ? undefined : verificationFilter,
+          query: queryParam,
+          status: verificationFilter === "all" ? undefined : verificationFilter,
           limit: ITEMS_PER_PAGE,
           offset: newOffset,
         });
@@ -109,8 +244,13 @@ export function CredentialsPage() {
           setCredentials((prev) => [...prev, ...results]);
         }
 
-        setTotal(data.total || 0);
-        setHasMore((data.total || 0) > newOffset + ITEMS_PER_PAGE);
+        const totalCount = data.total || 0;
+        setTotal(totalCount);
+        const computedHasMore =
+          typeof data.has_more === "boolean"
+            ? data.has_more
+            : totalCount > newOffset + results.length;
+        setHasMore(computedHasMore);
         setOffset(newOffset);
       } catch (err) {
         console.error("Failed to fetch credentials:", err);
@@ -123,7 +263,7 @@ export function CredentialsPage() {
         setLoadingMore(false);
       }
     },
-    [timeRange, verificationFilter, getTimeRangeParams]
+    [debouncedQuery, timeRange, verificationFilter, getTimeRangeParams]
   );
 
   // Initial load and filter changes
@@ -131,25 +271,7 @@ export function CredentialsPage() {
     fetchCredentials(0, true);
   }, [fetchCredentials]);
 
-  // Filter credentials by search query and verification status
-  const filteredCredentials = credentials.filter((cred) => {
-    // Verification filter
-    if (verificationFilter === "verified" && !cred.verified) return false;
-    if (verificationFilter === "failed" && cred.verified) return false;
-
-    // Search filter
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      return (
-        cred.execution_id.toLowerCase().includes(query) ||
-        cred.workflow_id.toLowerCase().includes(query) ||
-        (cred.issuer_did && cred.issuer_did.toLowerCase().includes(query)) ||
-        (cred.agent_name && cred.agent_name.toLowerCase().includes(query))
-      );
-    }
-
-    return true;
-  });
+  const visibleCredentials = credentials;
 
   // Handlers
   const handleRefresh = () => {
@@ -192,8 +314,8 @@ export function CredentialsPage() {
     URL.revokeObjectURL(url);
   };
 
-  const handleExportFiltered = async () => {
-    const dataStr = JSON.stringify(filteredCredentials, null, 2);
+  const handleExportCurrent = async () => {
+    const dataStr = JSON.stringify(visibleCredentials, null, 2);
     const dataBlob = new Blob([dataStr], { type: "application/json" });
     const url = URL.createObjectURL(dataBlob);
     const link = document.createElement("a");
@@ -203,22 +325,40 @@ export function CredentialsPage() {
     URL.revokeObjectURL(url);
   };
 
-  // Table columns
+  // Table columns - 6 columns with separate Execution ID and DID
   const columns = [
     {
-      key: "verified",
-      header: "✓",
-      sortable: true,
-      align: "center" as const,
-      render: (cred: VCSearchResult) => (
-        <div className="flex items-center justify-center">
-          {cred.verified ? (
-            <CheckCircle size={16} className="text-green-600" />
-          ) : (
-            <XCircle size={16} className="text-red-600" />
-          )}
-        </div>
-      ),
+      key: "status",
+      header: "Status",
+      sortable: false,
+      align: "left" as const,
+      render: (cred: VCSearchResult) => {
+        const normalizedStatus = cred.status?.toLowerCase() || "unknown";
+        let badgeVariant: "default" | "secondary" | "destructive" | "outline" = "secondary";
+        let badgeLabel = "Verified";
+        let icon = <CheckCircle size={16} className="text-green-600" />;
+
+        if (!cred.verified && normalizedStatus === "failed") {
+          badgeVariant = "destructive";
+          badgeLabel = "Failed";
+          icon = <XCircle size={16} className="text-red-600" />;
+        } else if (!cred.verified && normalizedStatus === "pending") {
+          badgeVariant = "outline";
+          badgeLabel = "Pending";
+          icon = <Clock size={16} className="text-amber-500" />;
+        } else if (!cred.verified) {
+          badgeVariant = "outline";
+          badgeLabel = normalizedStatus.charAt(0).toUpperCase() + normalizedStatus.slice(1);
+          icon = <ShieldCheck size={16} className="text-muted-foreground" />;
+        }
+
+        return (
+          <div className="flex items-center gap-2">
+            {icon}
+            <Badge variant={badgeVariant}>{badgeLabel}</Badge>
+          </div>
+        );
+      },
     },
     {
       key: "execution_id",
@@ -226,49 +366,88 @@ export function CredentialsPage() {
       sortable: false,
       align: "left" as const,
       render: (cred: VCSearchResult) => (
-        <div className="flex items-center gap-2 min-w-0">
-          <code className="text-xs font-mono text-muted-foreground truncate block">
-            {cred.execution_id}
-          </code>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-6 w-6 flex-shrink-0"
+        <TooltipProvider>
+          <div className="flex items-center gap-1.5 min-w-0">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <code className="text-xs font-mono text-foreground truncate block flex-1 cursor-help">
+                  {cred.execution_id}
+                </code>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="max-w-md">
+                <p className="font-mono text-xs break-all">{cred.execution_id}</p>
+              </TooltipContent>
+            </Tooltip>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6 flex-shrink-0"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleCopy(cred.execution_id, "execution");
+              }}
+              title="Copy execution ID"
+            >
+              <Copy className="w-3 h-3" />
+            </Button>
+          </div>
+        </TooltipProvider>
+      ),
+    },
+    {
+      key: "did",
+      header: "DID",
+      sortable: false,
+      align: "left" as const,
+      render: (cred: VCSearchResult) => (
+        <TooltipProvider>
+          <div className="flex items-center gap-1.5 min-w-0">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <code className="text-xs font-mono text-muted-foreground truncate block flex-1 cursor-help">
+                  {truncateDID(cred.issuer_did)}
+                </code>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="max-w-md">
+                <p className="font-mono text-xs break-all">{cred.issuer_did}</p>
+              </TooltipContent>
+            </Tooltip>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6 flex-shrink-0"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleCopy(cred.issuer_did, "did");
+              }}
+              title="Copy DID"
+            >
+              <Copy className="w-3 h-3" />
+            </Button>
+          </div>
+        </TooltipProvider>
+      ),
+    },
+    {
+      key: "context",
+      header: "Context",
+      sortable: false,
+      align: "left" as const,
+      render: (cred: VCSearchResult) => (
+        <div className="flex flex-col gap-0.5 min-w-0 overflow-hidden">
+          <span className="text-sm font-medium text-foreground truncate block" title={cred.agent_name || "Unknown agent"}>
+            {cred.agent_name || "Unknown agent"}
+          </span>
+          <button
+            className="text-xs text-primary hover:underline text-left truncate block"
             onClick={(e) => {
               e.stopPropagation();
-              handleCopy(cred.execution_id, "execution");
+              navigate(`/workflows/${cred.workflow_id}`);
             }}
+            title={cred.workflow_name || cred.workflow_id}
           >
-            <Copy className="w-3 h-3" />
-          </Button>
-        </div>
-      ),
-    },
-    {
-      key: "agent_name",
-      header: "Agent",
-      sortable: false,
-      align: "left" as const,
-      render: (cred: VCSearchResult) => (
-        <span className="text-sm text-muted-foreground truncate block">
-          {cred.agent_name || "—"}
-        </span>
-      ),
-    },
-    {
-      key: "workflow_id",
-      header: "Workflow",
-      sortable: false,
-      align: "left" as const,
-      render: (cred: VCSearchResult) => (
-        <div
-          className="text-sm text-primary cursor-pointer hover:underline truncate"
-          onClick={(e) => {
-            e.stopPropagation();
-            navigate(`/workflows/${cred.workflow_id}`);
-          }}
-        >
-          {cred.workflow_id}
+            {cred.workflow_name || cred.workflow_id}
+          </button>
         </div>
       ),
     },
@@ -277,11 +456,17 @@ export function CredentialsPage() {
       header: "Created",
       sortable: true,
       align: "left" as const,
-      render: (cred: VCSearchResult) => (
-        <span className="text-sm text-muted-foreground whitespace-nowrap">
-          {formatRelativeTime(cred.created_at)}
-        </span>
-      ),
+      render: (cred: VCSearchResult) => {
+        const createdDate = new Date(cred.created_at);
+        return (
+          <span
+            className="text-sm text-muted-foreground whitespace-nowrap"
+            title={createdDate.toLocaleString()}
+          >
+            {formatRelativeTime(cred.created_at)}
+          </span>
+        );
+      },
     },
     {
       key: "actions",
@@ -297,7 +482,7 @@ export function CredentialsPage() {
             e.stopPropagation();
             handleDownloadVC(cred);
           }}
-          title="Download"
+          title="Download credential"
         >
           <Download className="w-3.5 h-3.5" />
         </Button>
@@ -305,80 +490,125 @@ export function CredentialsPage() {
     },
   ];
 
+  const timeRangeLabel = useMemo(
+    () => TIME_FILTER_OPTIONS.find((opt) => opt.value === timeRange)?.label ?? "selected range",
+    [timeRange]
+  );
+
+  const filtersActive = useMemo(
+    () =>
+      verificationFilter !== "all" ||
+      timeRange !== "24h" ||
+      Boolean(debouncedQuery),
+    [debouncedQuery, timeRange, verificationFilter]
+  );
+
+  // Status filter options with icons
+  const statusFilterOptions = [
+    { value: "all", label: "All" },
+    { value: "verified", label: "Verified", icon: CheckCircle },
+    { value: "failed", label: "Failed", icon: XCircle },
+    { value: "pending", label: "Pending", icon: Clock },
+  ];
+
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-hidden">
-      <PageHeader
-        title=""
-        description={
-          selectedCredential
-            ? `Viewing credential for execution ${selectedCredential.execution_id}`
-            : `Verifiable credentials for agent executions and workflows${total > 0 ? ` • Showing ${filteredCredentials.length} of ${total}` : ""}`
-        }
-        filters={
-          !selectedCredential
-            ? [
-                {
-                  label: "Time Range",
-                  value: timeRange,
-                  options: TIME_FILTER_OPTIONS,
-                  onChange: (value) => setTimeRange(value),
-                },
-                {
-                  label: "Verification",
-                  value: verificationFilter,
-                  options: VERIFICATION_FILTER_OPTIONS,
-                  onChange: (value) => setVerificationFilter(value),
-                },
-              ]
-            : undefined
-        }
-        aside={
-          <div className="flex items-center gap-2">
-            {selectedCredential && (
-              <Button variant="ghost" size="sm" onClick={handleBackToList}>
-                ← Back to Credentials
-              </Button>
-            )}
-            {!selectedCredential && filteredCredentials.length > 0 && (
+    <>
+      <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-hidden p-6">
+        {/* Header */}
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
+            <div className="min-w-0 flex-1">
+              <h1 className="text-heading-1 truncate">Credentials</h1>
+              <p className="mt-1 text-body text-muted-foreground">
+                {selectedCredential
+                  ? `Viewing credential for execution ${selectedCredential.execution_id}`
+                  : `Verifiable credentials for agent executions • ${total > 0 ? `Showing ${visibleCredentials.length} of ${total.toLocaleString()}` : "No credentials"} • ${timeRangeLabel}`}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              {!selectedCredential && timeRange === "all" && (
+                <Badge variant="outline" className="text-amber-700 border-amber-200 bg-amber-50">
+                  All time query
+                </Badge>
+              )}
+              {selectedCredential && (
+                <Button variant="ghost" size="sm" onClick={handleBackToList}>
+                  ← Back to Credentials
+                </Button>
+              )}
+              {!selectedCredential && visibleCredentials.length > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleExportCurrent}
+                  className="flex items-center gap-2"
+                >
+                  <Download size={14} />
+                  Export ({visibleCredentials.length})
+                </Button>
+              )}
               <Button
                 variant="outline"
                 size="sm"
-                onClick={handleExportFiltered}
+                onClick={handleRefresh}
+                disabled={loading}
                 className="flex items-center gap-2"
               >
-                <Download size={14} />
-                Export ({filteredCredentials.length})
+                <Renew size={14} className={loading ? "animate-spin" : ""} />
+                Refresh
               </Button>
-            )}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRefresh}
-              disabled={loading}
-              className="flex items-center gap-2"
-            >
-              <Renew size={14} className={loading ? "animate-spin" : ""} />
-              Refresh
-            </Button>
+            </div>
           </div>
-        }
-      />
 
-      {/* Error Alert */}
-      {error && (
-        <Alert variant="destructive">
-          <Terminal className="h-4 w-4" />
-          <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
+          {/* Filters - Only show when not viewing a credential */}
+          {!selectedCredential && (
+            <div className="flex flex-col gap-4">
+              {/* Search Bar */}
+              <SearchBar
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder="Search by execution ID, agent, workflow, or DID..."
+                wrapperClassName="w-full"
+              />
 
-      {/* Content */}
-      <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-hidden">
-        {selectedCredential ? (
-          // Credential Detail View
-          <>
-            <div className="bg-card border border-border rounded-lg p-6">
+              {/* Status Filter */}
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium text-muted-foreground">Status</label>
+                <SegmentedStatusFilter
+                  value={verificationFilter}
+                  onChange={setVerificationFilter}
+                  options={statusFilterOptions}
+                />
+              </div>
+
+              {/* Time Range */}
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium text-muted-foreground">Time Range</label>
+                <TimeRangePills
+                  value={timeRange}
+                  onChange={handleTimeRangeChange}
+                  options={TIME_FILTER_OPTIONS}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Error Alert */}
+        {error && (
+          <Alert variant="destructive">
+            <Terminal className="h-4 w-4" />
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
+        {/* Content */}
+        <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-hidden">
+          {selectedCredential ? (
+            // Credential Detail View
+            <div className="bg-card border border-border rounded-lg p-6 overflow-y-auto">
               <div className="flex items-start justify-between mb-6">
                 <div className="flex items-center gap-3">
                   <ShieldCheck size={20} className="text-primary" />
@@ -414,6 +644,10 @@ export function CredentialsPage() {
                 <div className="space-y-3">
                   <h3 className="text-sm font-semibold">Execution Details</h3>
                   <div className="space-y-2 text-sm">
+                    <div>
+                      <span className="text-muted-foreground">Execution ID:</span>
+                      <div className="font-mono text-xs mt-1 break-all">{selectedCredential.execution_id}</div>
+                    </div>
                     {selectedCredential.agent_name && (
                       <div>
                         <span className="text-muted-foreground">Agent:</span>
@@ -423,10 +657,10 @@ export function CredentialsPage() {
                     <div>
                       <span className="text-muted-foreground">Workflow:</span>
                       <div
-                        className="font-mono text-xs mt-1 text-primary cursor-pointer hover:underline"
+                        className="mt-1 text-primary cursor-pointer hover:underline"
                         onClick={() => navigate(`/workflows/${selectedCredential.workflow_id}`)}
                       >
-                        {selectedCredential.workflow_id}
+                        {selectedCredential.workflow_name || selectedCredential.workflow_id}
                       </div>
                     </div>
                     {selectedCredential.session_id && (
@@ -521,20 +755,11 @@ export function CredentialsPage() {
                 )}
               </div>
             </div>
-          </>
-        ) : (
-          // Credentials List View
-          <>
-            <SearchBar
-              value={searchQuery}
-              onChange={setSearchQuery}
-              placeholder="Search by execution ID, workflow, agent, or issuer DID..."
-              wrapperClassName="w-full lg:max-w-md"
-            />
-
+          ) : (
+            // Credentials List View
             <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
               <CompactTable
-                data={filteredCredentials}
+                data={visibleCredentials}
                 loading={loading}
                 hasMore={hasMore}
                 isFetchingMore={loadingMore}
@@ -546,24 +771,68 @@ export function CredentialsPage() {
                 columns={columns}
                 gridTemplate={GRID_TEMPLATE}
                 emptyState={{
-                  title: searchQuery
-                    ? "No matching credentials"
-                    : timeRange === "all"
-                      ? "No credentials found"
-                      : `No credentials in ${TIME_FILTER_OPTIONS.find(o => o.value === timeRange)?.label.toLowerCase()}`,
-                  description: searchQuery
-                    ? "Try adjusting your search terms or filters."
-                    : timeRange !== "all"
-                      ? "Try expanding the time range to see more credentials."
-                      : "Credentials will appear here as executions complete.",
+                  title: debouncedQuery
+                    ? "No credentials match your search"
+                    : filtersActive
+                      ? "No credentials match your filters"
+                      : "No credentials yet",
+                  description: debouncedQuery
+                    ? "Try refining your search query or adjusting the time range."
+                    : filtersActive
+                      ? `No credentials found for the current filters (${timeRangeLabel.toLowerCase()}). Try clearing filters or expanding the range.`
+                      : "Credentials will appear here as new executions finish.",
                   icon: <ShieldCheck className="h-6 w-6 text-muted-foreground" />,
                 }}
                 getRowKey={(cred) => cred.vc_id}
               />
             </div>
-          </>
-        )}
+          )}
+        </div>
       </div>
-    </div>
+
+      <Dialog open={showCustomRangeDialog} onOpenChange={setShowCustomRangeDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Custom time range</DialogTitle>
+            <DialogDescription>
+              Choose the start and end timestamps to query historical credentials within a specific window.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-2">
+            <div className="grid gap-2">
+              <label htmlFor="custom-range-start" className="text-sm font-medium text-muted-foreground">
+                Start time
+              </label>
+              <Input
+                id="custom-range-start"
+                type="datetime-local"
+                value={customRangeDraft.start ?? ""}
+                onChange={(event) => handleCustomRangeDraftChange("start", event.target.value)}
+              />
+            </div>
+            <div className="grid gap-2">
+              <label htmlFor="custom-range-end" className="text-sm font-medium text-muted-foreground">
+                End time
+              </label>
+              <Input
+                id="custom-range-end"
+                type="datetime-local"
+                value={customRangeDraft.end ?? ""}
+                onChange={(event) => handleCustomRangeDraftChange("end", event.target.value)}
+              />
+            </div>
+            {customRangeError && (
+              <p className="text-sm text-destructive">{customRangeError}</p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowCustomRangeDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleCustomRangeApply}>Apply range</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

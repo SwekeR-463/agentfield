@@ -19,7 +19,7 @@ export function formatRelativeTime(date: Date | string): string {
 
   // Less than 1 minute
   if (diffMins < 1) {
-    return 'Just now';
+    return '< 1 min ago';
   }
 
   // Less than 1 hour
@@ -97,9 +97,6 @@ export function formatCompactDate(date: Date | string): string {
   return then.toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true
+    year: 'numeric'
   });
 }

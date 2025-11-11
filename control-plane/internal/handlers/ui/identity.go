@@ -46,15 +46,15 @@ type DIDStatsResponse struct {
 
 // AgentDIDResponse represents an agent with its DIDs
 type AgentDIDResponse struct {
-	DID            string              `json:"did"`
-	AgentNodeID    string              `json:"agent_node_id"`
-	Status         string              `json:"status"`
-	DerivationPath string              `json:"derivation_path"`
-	CreatedAt      string              `json:"created_at"`
-	ReasonerCount  int                 `json:"reasoner_count"`
-	SkillCount     int                 `json:"skill_count"`
-	Reasoners      []ComponentDIDInfo  `json:"reasoners,omitempty"`
-	Skills         []ComponentDIDInfo  `json:"skills,omitempty"`
+	DID            string             `json:"did"`
+	AgentNodeID    string             `json:"agent_node_id"`
+	Status         string             `json:"status"`
+	DerivationPath string             `json:"derivation_path"`
+	CreatedAt      string             `json:"created_at"`
+	ReasonerCount  int                `json:"reasoner_count"`
+	SkillCount     int                `json:"skill_count"`
+	Reasoners      []ComponentDIDInfo `json:"reasoners,omitempty"`
+	Skills         []ComponentDIDInfo `json:"skills,omitempty"`
 }
 
 // ComponentDIDInfo represents a reasoner or skill DID
@@ -68,19 +68,20 @@ type ComponentDIDInfo struct {
 
 // VCSearchResult represents a verifiable credential search result
 type VCSearchResult struct {
-	VCID         string  `json:"vc_id"`
-	ExecutionID  string  `json:"execution_id"`
-	WorkflowID   string  `json:"workflow_id"`
-	SessionID    string  `json:"session_id"`
-	IssuerDID    string  `json:"issuer_did"`
-	TargetDID    string  `json:"target_did"`
-	CallerDID    string  `json:"caller_did"`
-	Status       string  `json:"status"`
-	CreatedAt    string  `json:"created_at"`
-	DurationMS   *int    `json:"duration_ms,omitempty"`
-	ReasonerName string  `json:"reasoner_name,omitempty"`
-	AgentName    string  `json:"agent_name,omitempty"`
-	Verified     bool    `json:"verified"`
+	VCID         string `json:"vc_id"`
+	ExecutionID  string `json:"execution_id"`
+	WorkflowID   string `json:"workflow_id"`
+	WorkflowName string `json:"workflow_name,omitempty"`
+	SessionID    string `json:"session_id"`
+	IssuerDID    string `json:"issuer_did"`
+	TargetDID    string `json:"target_did"`
+	CallerDID    string `json:"caller_did"`
+	Status       string `json:"status"`
+	CreatedAt    string `json:"created_at"`
+	DurationMS   *int   `json:"duration_ms,omitempty"`
+	ReasonerName string `json:"reasoner_name,omitempty"`
+	AgentName    string `json:"agent_name,omitempty"`
+	Verified     bool   `json:"verified"`
 }
 
 // GetDIDStats returns statistics about DIDs in the system
@@ -204,11 +205,11 @@ func (h *IdentityHandlers) SearchDIDs(c *gin.Context) {
 	paginatedResults := results[start:end]
 
 	c.JSON(http.StatusOK, gin.H{
-		"results":     paginatedResults,
-		"total":       total,
-		"limit":       limit,
-		"offset":      offset,
-		"has_more":    end < total,
+		"results":  paginatedResults,
+		"total":    total,
+		"limit":    limit,
+		"offset":   offset,
+		"has_more": end < total,
 	})
 }
 
@@ -418,12 +419,51 @@ func (h *IdentityHandlers) SearchCredentials(c *gin.Context) {
 		filters.SessionID = &sessionID
 	}
 
-	if status := c.Query("status"); status != "" {
-		filters.Status = &status
+	if statusParam := c.Query("status"); statusParam != "" {
+		normalized := strings.ToLower(statusParam)
+		switch normalized {
+		case "all":
+			normalized = ""
+		case "verified":
+			normalized = "completed"
+		case "failed":
+			normalized = "failed"
+		case "pending":
+			normalized = "pending"
+		case "revoked":
+			normalized = "revoked"
+		}
+		if normalized != "" {
+			filters.Status = &normalized
+		}
 	}
 
 	if issuerDID := c.Query("issuer_did"); issuerDID != "" {
 		filters.IssuerDID = &issuerDID
+	}
+
+	if executionID := c.Query("execution_id"); executionID != "" {
+		filters.ExecutionID = &executionID
+	}
+
+	if callerDID := c.Query("caller_did"); callerDID != "" {
+		filters.CallerDID = &callerDID
+	}
+
+	if targetDID := c.Query("target_did"); targetDID != "" {
+		filters.TargetDID = &targetDID
+	}
+
+	if agentNodeID := c.Query("agent_node_id"); agentNodeID != "" {
+		filters.AgentNodeID = &agentNodeID
+	} else if agentNodeID := c.Query("agent_id"); agentNodeID != "" {
+		filters.AgentNodeID = &agentNodeID
+	}
+
+	if search := strings.TrimSpace(c.Query("query")); search != "" {
+		filters.Search = &search
+	} else if q := strings.TrimSpace(c.Query("q")); q != "" {
+		filters.Search = &q
 	}
 
 	// Parse time range filters
@@ -451,30 +491,54 @@ func (h *IdentityHandlers) SearchCredentials(c *gin.Context) {
 		return
 	}
 
+	countFilters := filters
+	countFilters.Limit = 0
+	countFilters.Offset = 0
+	totalCount, err := h.storage.CountExecutionVCs(ctx, countFilters)
+	if err != nil {
+		logger.Logger.Error().Err(err).Msg("Failed to count execution VCs")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to search credentials"})
+		return
+	}
+
 	// Transform to search results
 	var results []VCSearchResult
 	for i := range vcs {
 		vc := vcs[i]
+		var agentName string
+		if vc.AgentNodeID != nil {
+			agentName = *vc.AgentNodeID
+		}
+
+		var workflowName string
+		if vc.WorkflowName != nil {
+			workflowName = *vc.WorkflowName
+		}
+
+		verified := strings.EqualFold(vc.Status, "completed") || strings.EqualFold(vc.Status, "succeeded")
+
 		results = append(results, VCSearchResult{
-			VCID:        vc.VCID,
-			ExecutionID: vc.ExecutionID,
-			WorkflowID:  vc.WorkflowID,
-			SessionID:   vc.SessionID,
-			IssuerDID:   vc.IssuerDID,
-			TargetDID:   vc.TargetDID,
-			CallerDID:   vc.CallerDID,
-			Status:      vc.Status,
-			CreatedAt:   vc.CreatedAt.Format("2006-01-02T15:04:05Z"),
-			Verified:    true, // Assume verified if in database
+			VCID:         vc.VCID,
+			ExecutionID:  vc.ExecutionID,
+			WorkflowID:   vc.WorkflowID,
+			WorkflowName: workflowName,
+			SessionID:    vc.SessionID,
+			IssuerDID:    vc.IssuerDID,
+			TargetDID:    vc.TargetDID,
+			CallerDID:    vc.CallerDID,
+			Status:       vc.Status,
+			CreatedAt:    vc.CreatedAt.Format("2006-01-02T15:04:05Z"),
+			AgentName:    agentName,
+			Verified:     verified,
 		})
 	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"credentials": results,
-		"total":       len(results),
+		"total":       totalCount,
 		"limit":       filters.Limit,
 		"offset":      filters.Offset,
-		"has_more":    len(results) == filters.Limit,
+		"has_more":    filters.Offset+len(results) < totalCount,
 	})
 }
 

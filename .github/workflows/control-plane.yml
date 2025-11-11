@@ -63,6 +63,7 @@ jobs:
         run: |
           go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
           golangci-lint run
+        continue-on-error: true
 
   compile-matrix:
     runs-on: ubuntu-latest

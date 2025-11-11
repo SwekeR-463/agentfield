@@ -326,7 +326,9 @@ class AgentFieldClient:
         response.raise_for_status()  # Raise an exception for bad status codes
         return response.json()
 
-    def _apply_vc_metadata(self, registration_data: Dict[str, Any], vc_metadata: Optional[Dict[str, Any]]) -> None:
+    def _apply_vc_metadata(
+        self, registration_data: Dict[str, Any], vc_metadata: Optional[Dict[str, Any]]
+    ) -> None:
         """Attach VC metadata to the registration payload if supplied."""
         if not vc_metadata:
             return

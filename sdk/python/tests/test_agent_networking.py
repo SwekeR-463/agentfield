@@ -212,12 +212,8 @@ def test_vc_policy_overrides_precedence(monkeypatch):
     def bulk_skill(amount: int) -> int:
         return amount
 
-    assert agent._should_generate_vc(
-        "critical", agent._reasoner_vc_overrides
-    ) is True
-    assert agent._should_generate_vc(
-        "fallback", agent._reasoner_vc_overrides
-    ) is False
+    assert agent._should_generate_vc("critical", agent._reasoner_vc_overrides) is True
+    assert agent._should_generate_vc("fallback", agent._reasoner_vc_overrides) is False
     assert agent._should_generate_vc("bulk", agent._skill_vc_overrides) is True
 
     metadata = agent._build_vc_metadata()

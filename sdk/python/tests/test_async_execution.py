@@ -8,7 +8,9 @@ from agentfield.client import AgentFieldClient
 
 @pytest.mark.asyncio
 async def test_reasoner_async_mode_sends_status(monkeypatch):
-    agent = Agent(node_id="test-agent", agentfield_server="http://control", auto_register=False)
+    agent = Agent(
+        node_id="test-agent", agentfield_server="http://control", auto_register=False
+    )
 
     @agent.reasoner()
     async def echo(value: int) -> dict:
@@ -51,7 +53,9 @@ async def test_reasoner_async_mode_sends_status(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_post_execution_status_retries(monkeypatch):
-    agent = Agent(node_id="test-agent", agentfield_server="http://control", auto_register=False)
+    agent = Agent(
+        node_id="test-agent", agentfield_server="http://control", auto_register=False
+    )
 
     attempts = {"count": 0}
 

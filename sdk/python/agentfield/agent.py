@@ -886,8 +886,14 @@ class Agent(FastAPI):
             return overrides[component_id]
         return self._agent_vc_default()
 
-    def _should_generate_vc(self, component_id: str, overrides: Dict[str, bool]) -> bool:
-        if not self.did_enabled or not self.vc_generator or not self.vc_generator.is_enabled():
+    def _should_generate_vc(
+        self, component_id: str, overrides: Dict[str, bool]
+    ) -> bool:
+        if (
+            not self.did_enabled
+            or not self.vc_generator
+            or not self.vc_generator.is_enabled()
+        ):
             return False
         return self._effective_component_vc_setting(component_id, overrides)
 
@@ -1171,7 +1177,6 @@ class Agent(FastAPI):
                     )
 
                 return await run_reasoner()
-
 
             # 🔥 ENHANCED: Comprehensive function replacement for unified tracking
             original_func = func
@@ -1773,7 +1778,9 @@ class Agent(FastAPI):
             router._attach_agent(self)
             normalized_prefix = prefix.rstrip("/") if prefix else ""
 
-            def _replace_module_reference(original_func: Callable, tracked_func: Callable) -> None:
+            def _replace_module_reference(
+                original_func: Callable, tracked_func: Callable
+            ) -> None:
                 module_name = getattr(original_func, "__module__", None)
                 attr_name = getattr(original_func, "__name__", None)
                 if not module_name or not attr_name:

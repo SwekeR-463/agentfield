@@ -77,15 +77,15 @@ type WorkflowDAGLightweightNode struct {
 }
 
 type WorkflowDAGLightweightResponse struct {
-	RootWorkflowID string                        `json:"root_workflow_id"`
-	WorkflowStatus string                        `json:"workflow_status"`
-	WorkflowName   string                        `json:"workflow_name"`
-	SessionID      *string                       `json:"session_id,omitempty"`
-	ActorID        *string                       `json:"actor_id,omitempty"`
-	TotalNodes     int                           `json:"total_nodes"`
-	MaxDepth       int                           `json:"max_depth"`
-	Timeline       []WorkflowDAGLightweightNode  `json:"timeline"`
-	Mode           string                        `json:"mode"`
+	RootWorkflowID string                       `json:"root_workflow_id"`
+	WorkflowStatus string                       `json:"workflow_status"`
+	WorkflowName   string                       `json:"workflow_name"`
+	SessionID      *string                      `json:"session_id,omitempty"`
+	ActorID        *string                      `json:"actor_id,omitempty"`
+	TotalNodes     int                          `json:"total_nodes"`
+	MaxDepth       int                          `json:"max_depth"`
+	Timeline       []WorkflowDAGLightweightNode `json:"timeline"`
+	Mode           string                       `json:"mode"`
 }
 
 func GetWorkflowDAGHandler(storageProvider storage.StorageProvider) gin.HandlerFunc {

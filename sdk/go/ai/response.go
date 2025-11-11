@@ -40,9 +40,9 @@ type StreamChunk struct {
 
 // StreamDelta represents a delta in a streaming response.
 type StreamDelta struct {
-	Index        int           `json:"index"`
-	Delta        MessageDelta  `json:"delta"`
-	FinishReason *string       `json:"finish_reason"`
+	Index        int          `json:"index"`
+	Delta        MessageDelta `json:"delta"`
+	FinishReason *string      `json:"finish_reason"`
 }
 
 // MessageDelta represents the incremental message content.

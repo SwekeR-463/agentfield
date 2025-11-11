@@ -14,16 +14,16 @@ import (
 )
 
 var (
-	cfgFile           string
-	verbose           bool
-	openBrowserFlag   bool
-	uiDevFlag         bool
-	backendOnlyFlag   bool
-	portFlag          int
-	noVCExecution     bool
-	forceVCExecution  bool
-	storageModeFlag   string
-	postgresURLFlag   string
+	cfgFile          string
+	verbose          bool
+	openBrowserFlag  bool
+	uiDevFlag        bool
+	backendOnlyFlag  bool
+	portFlag         int
+	noVCExecution    bool
+	forceVCExecution bool
+	storageModeFlag  string
+	postgresURLFlag  string
 )
 
 // NewRootCommand creates and returns the root Cobra command for the AgentField CLI.

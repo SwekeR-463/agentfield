@@ -177,9 +177,7 @@ async def _execute_with_tracking(func: Callable, *args, **kwargs) -> Any:
     )
     if agent_has_did:
         try:
-            session_id = (
-                execution_context.session_id or execution_context.workflow_id
-            )
+            session_id = execution_context.session_id or execution_context.workflow_id
             did_execution_context = agent_instance.did_manager.create_execution_context(
                 execution_context.execution_id,
                 execution_context.workflow_id,
@@ -187,9 +185,8 @@ async def _execute_with_tracking(func: Callable, *args, **kwargs) -> Any:
                 "agent",
                 reasoner_name,
             )
-            if (
-                did_execution_context
-                and hasattr(agent_instance, "_populate_execution_context_with_did")
+            if did_execution_context and hasattr(
+                agent_instance, "_populate_execution_context_with_did"
             ):
                 agent_instance._populate_execution_context_with_did(
                     execution_context, did_execution_context

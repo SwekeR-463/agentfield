@@ -366,5 +366,6 @@ async def test_register_agent(monkeypatch):
     assert posted[0][1].endswith("/nodes/register")
     body = posted[0][2]
     assert (
-        body["metadata"]["custom"]["vc_generation"]["reasoner_overrides"]["foo"] is False
+        body["metadata"]["custom"]["vc_generation"]["reasoner_overrides"]["foo"]
+        is False
     )

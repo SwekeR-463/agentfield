@@ -6,17 +6,17 @@ import { Input } from './ui/input';
 import { ResponsiveGrid } from '@/components/layout/ResponsiveGrid';
 import { Separator } from './ui/separator';
 import { Skeleton } from './ui/skeleton';
-import { 
-  getExecutionsSummary, 
-  getExecutionStats, 
+import {
+  getExecutionsSummary,
+  getExecutionStats,
   streamExecutionEvents,
-  searchExecutions 
+  searchExecutions
 } from '../services/executionsApi';
-import type { 
-  ExecutionSummary, 
-  ExecutionStats, 
+import type {
+  ExecutionSummary,
+  ExecutionStats,
   ExecutionFilters,
-  ExecutionGrouping 
+  ExecutionGrouping
 } from '../types/executions';
 import { statusTone } from '@/lib/theme';
 import { cn } from '@/lib/utils';
@@ -56,9 +56,9 @@ interface ExecutionsListProps {
   description?: string;
 }
 
-export function ExecutionsList({ 
-  initialFilters = {}, 
-  showStats = true, 
+export function ExecutionsList({
+  initialFilters = {},
+  showStats = true,
   showFilters = true,
   title = "Execution Monitor",
   description = "Track and monitor all workflow executions across your agents"
@@ -93,7 +93,7 @@ export function ExecutionsList({
       setError(null);
 
       const result = await getExecutionsSummary(filters, grouping);
-      
+
       if ('executions' in result) {
         // PaginatedExecutions
         setExecutions(result.executions);
@@ -127,7 +127,7 @@ export function ExecutionsList({
 
   const fetchStats = useCallback(async () => {
     if (!showStats) return;
-    
+
     try {
       const statsData = await getExecutionStats(filters);
       setStats(statsData);
@@ -144,21 +144,21 @@ export function ExecutionsList({
   // Set up real-time updates with error handling
   useEffect(() => {
     let eventSource: EventSource | null = null;
-    
+
     try {
       eventSource = streamExecutionEvents();
-      
+
       eventSource.onmessage = (event) => {
         try {
           const executionEvent = JSON.parse(event.data);
-          
+
           // Update executions list based on event type
           setExecutions(prev => {
             if (!executionEvent.execution) return prev;
-            
+
             const executionId = executionEvent.execution.execution_id || executionEvent.execution.id?.toString();
             const existingIndex = prev.findIndex(e => (e.execution_id || e.id?.toString()) === executionId);
-            
+
             if (existingIndex >= 0) {
               // Update existing execution
               const updated = [...prev];
@@ -168,7 +168,7 @@ export function ExecutionsList({
               // Add new execution to the beginning
               return [executionEvent.execution, ...prev];
             }
-            
+
             return prev;
           });
 

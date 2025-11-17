@@ -348,6 +348,6 @@ async def test_nested_reasoners_emit_child_completion_before_parent(monkeypatch)
         if entry[1] == "succeeded" and entry[0].endswith("parent_reasoner")
     )
 
-    assert child_complete_index < parent_complete_index, (
-        "Parent reasoner completion emitted before child finished"
-    )
+    assert (
+        child_complete_index < parent_complete_index
+    ), "Parent reasoner completion emitted before child finished"

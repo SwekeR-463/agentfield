@@ -97,11 +97,11 @@ const convertNodesToElk = (nodes: Node[]): ElkNode[] => {
     const nodeData = node.data as any;
     const taskText = nodeData.task_name || nodeData.reasoner_id || '';
     const agentText = nodeData.agent_name || nodeData.agent_node_id || '';
-    
+
     const minWidth = 200;
     const maxWidth = 360;
     const charWidth = 7.5;
-    
+
     const humanizeText = (text: string): string => {
       return text
         .replace(/_/g, ' ')
@@ -110,20 +110,20 @@ const convertNodesToElk = (nodes: Node[]): ElkNode[] => {
         .replace(/\s+/g, ' ')
         .trim();
     };
-    
+
     const taskHuman = humanizeText(taskText);
     const agentHuman = humanizeText(agentText);
-    
+
     const taskWordsLength = taskHuman.split(' ').reduce((max, word) => Math.max(max, word.length), 0);
     const agentWordsLength = agentHuman.split(' ').reduce((max, word) => Math.max(max, word.length), 0);
-    
+
     const longestWord = Math.max(taskWordsLength, agentWordsLength);
     const estimatedWidth = Math.max(
       longestWord * charWidth * 1.8,
       (taskHuman.length / 2.2) * charWidth,
       (agentHuman.length / 2.2) * charWidth
     ) + 80;
-    
+
     const width = Math.min(maxWidth, Math.max(minWidth, estimatedWidth));
     const height = 100;
 
@@ -151,7 +151,7 @@ const convertElkToReactFlow = (
   originalEdges: Edge[]
 ): { nodes: Node[]; edges: Edge[] } => {
   const nodeMap = new Map(originalNodes.map(node => [node.id, node]));
-  
+
   const layoutedNodes: Node[] = elkGraph.children?.map((elkNode) => {
     const originalNode = nodeMap.get(elkNode.id);
     if (!originalNode) {
@@ -210,12 +210,12 @@ export const applyElkLayout = async (
 
     // Apply layout
     const layoutedGraph = await elk.layout(elkGraph);
-    
+
     console.log('🔍 ELK DEBUG: Layouted graph:', layoutedGraph);
 
     // Convert back to ReactFlow format
     const result = convertElkToReactFlow(layoutedGraph, nodes, edges);
-    
+
     console.log('🔍 ELK DEBUG: Final nodes:', result.nodes.length, result.nodes);
 
     return result;
@@ -243,7 +243,7 @@ export const isAlgorithmSuitableForLargeGraphs = (algorithm: ElkAlgorithm): bool
     ELK_ALGORITHMS.RECT_PACKING,
     ELK_ALGORITHMS.TOPDOWN_PACKING,
   ];
-  
+
   return largeGraphAlgorithms.includes(algorithm);
 };
 

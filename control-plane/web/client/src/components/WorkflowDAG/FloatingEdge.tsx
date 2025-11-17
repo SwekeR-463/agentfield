@@ -147,7 +147,7 @@ function FloatingEdge({ id, source, target, style = {}, data }: FloatingEdgeProp
           />
         </marker>
       </defs>
-      
+
       <path
         id={id}
         className="react-flow__edge-path"

@@ -266,7 +266,7 @@ export function ExecutionViewTabs({ className }: ExecutionViewTabsProps) {
               </div>
             </CardContent>
           </Card>
-          
+
           {Object.entries(stats.status_breakdown || {}).map(([status, count]) => (
             <Card key={status}>
               <CardContent className="p-4">
@@ -275,7 +275,7 @@ export function ExecutionViewTabs({ className }: ExecutionViewTabsProps) {
                     <p className="text-sm font-medium text-muted-foreground capitalize">{status}</p>
                     <p className="text-display">{count as number}</p>
                   </div>
-                  <Badge 
+                  <Badge
                     variant={
                       status === 'completed' ? 'default' :
                       status === 'failed' ? 'destructive' :

@@ -55,7 +55,7 @@ export const ExecutionQueue = forwardRef<ExecutionQueueRef, ExecutionQueueProps>
   const navigate = useNavigate();
 
   // Get active executions (queued or running)
-  const activeExecutions = executions.filter(e => 
+  const activeExecutions = executions.filter(e =>
     e.status === 'queued' || e.status === 'running'
   );
 
@@ -67,10 +67,10 @@ export const ExecutionQueue = forwardRef<ExecutionQueueRef, ExecutionQueueProps>
 
   const addExecution = (input: any): string => {
     const executionId = `exec_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
+
     // Create input summary for display
     const inputSummary = createInputSummary(input);
-    
+
     const newExecution: QueuedExecution = {
       id: executionId,
       input,
@@ -80,7 +80,7 @@ export const ExecutionQueue = forwardRef<ExecutionQueueRef, ExecutionQueueProps>
     };
 
     setExecutions(prev => [newExecution, ...prev]);
-    
+
     // Start execution if not queued
     if (newExecution.status === 'running') {
       executeReasoner(executionId, input);
@@ -90,14 +90,14 @@ export const ExecutionQueue = forwardRef<ExecutionQueueRef, ExecutionQueueProps>
   };
 
   const cancelExecution = (executionId: string) => {
-    setExecutions(prev => 
-      prev.map(exec => 
+    setExecutions(prev =>
+      prev.map(exec =>
         exec.id === executionId && (exec.status === 'queued' || exec.status === 'running')
           ? { ...exec, status: 'failed', error: 'Cancelled by user', endTime: new Date() }
           : exec
       )
     );
-    
+
     // Start next queued execution if any
     processQueue();
   };
@@ -123,7 +123,7 @@ export const ExecutionQueue = forwardRef<ExecutionQueueRef, ExecutionQueueProps>
 
       // Use async API to get execution_id immediately
       const asyncResponse = await reasonersApi.executeReasonerAsync(reasonerId, request);
-      
+
       // Immediately capture the backend execution_id for navigation
       setExecutions(prev =>
         prev.map(exec =>
@@ -145,11 +145,11 @@ export const ExecutionQueue = forwardRef<ExecutionQueueRef, ExecutionQueueProps>
       const pollForCompletion = async () => {
         const maxAttempts = 300; // 5 minutes with 1-second intervals
         let attempts = 0;
-        
+
         while (attempts < maxAttempts) {
           try {
             const statusResponse = await reasonersApi.getExecutionStatus(asyncResponse.execution_id);
-            
+
             if (statusResponse.status === 'completed') {
               const endTime = new Date();
               const execution = executions.find(e => e.id === executionId);
@@ -206,7 +206,7 @@ export const ExecutionQueue = forwardRef<ExecutionQueueRef, ExecutionQueueProps>
               );
               return;
             }
-            
+
             // Still running, wait and try again
             await new Promise(resolve => setTimeout(resolve, 1000));
             attempts++;
@@ -216,7 +216,7 @@ export const ExecutionQueue = forwardRef<ExecutionQueueRef, ExecutionQueueProps>
             attempts++;
           }
         }
-        
+
         // Timeout reached
         const endTime = new Date();
         const execution = executions.find(e => e.id === executionId);
@@ -268,7 +268,7 @@ export const ExecutionQueue = forwardRef<ExecutionQueueRef, ExecutionQueueProps>
   const processQueue = () => {
     const runningCount = executions.filter(e => e.status === 'running').length;
     const queuedExecutions = executions.filter(e => e.status === 'queued');
-    
+
     if (runningCount < maxConcurrent && queuedExecutions.length > 0) {
       const nextExecution = queuedExecutions[0];
       executeReasoner(nextExecution.id, nextExecution.input);
@@ -277,7 +277,7 @@ export const ExecutionQueue = forwardRef<ExecutionQueueRef, ExecutionQueueProps>
 
   const checkPageAvailability = async (executionId: string, backendExecutionId: string, retryCount = 0) => {
     const maxRetries = 10; // Maximum 20 seconds of checking (10 retries * 2 seconds)
-    
+
     try {
       // Mark as checking availability
       setExecutions(prev =>
@@ -290,7 +290,7 @@ export const ExecutionQueue = forwardRef<ExecutionQueueRef, ExecutionQueueProps>
 
       // Check if execution details are available by trying to fetch execution status
       await reasonersApi.getExecutionStatus(backendExecutionId);
-      
+
       // If we can fetch the status, the page should be available
       setExecutions(prev =>
         prev.map(exec =>
@@ -336,12 +336,12 @@ export const ExecutionQueue = forwardRef<ExecutionQueueRef, ExecutionQueueProps>
     // Extract key-value pairs for summary
     const entries = Object.entries(input);
     if (entries.length === 0) return 'Empty object';
-    
+
     if (entries.length === 1) {
       const [key, value] = entries[0];
       return `${key}: ${String(value).slice(0, 20)}${String(value).length > 20 ? '...' : ''}`;
     }
-    
+
     return `${entries.length} parameters`;
   };
 
@@ -367,7 +367,7 @@ export const ExecutionQueue = forwardRef<ExecutionQueueRef, ExecutionQueueProps>
     if ((event.target as HTMLElement).closest('button')) {
       return;
     }
-    
+
     // If execution has backend execution_id and page is available, navigate to details page
     if (execution.execution_id && execution.page_available) {
       handleNavigateToExecution(execution);
@@ -376,7 +376,7 @@ export const ExecutionQueue = forwardRef<ExecutionQueueRef, ExecutionQueueProps>
       const isCurrentlySelected = selectedExecution === execution.id;
       const newSelection = isCurrentlySelected ? null : execution.id;
       setSelectedExecution(newSelection);
-      
+
       if (onExecutionSelect) {
         onExecutionSelect(isCurrentlySelected ? null : execution);
       }
@@ -480,7 +480,7 @@ export const ExecutionQueue = forwardRef<ExecutionQueueRef, ExecutionQueueProps>
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center gap-2">
                   <Badge variant="outline" className={getStatusColor(execution.status)}>
                     {execution.status}
@@ -600,7 +600,7 @@ export const ExecutionQueue = forwardRef<ExecutionQueueRef, ExecutionQueueProps>
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center gap-2">
                   <Badge variant="outline" className={getStatusColor(execution.status)}>
                     {execution.status}

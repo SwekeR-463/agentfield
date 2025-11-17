@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { 
-  Play, 
-  Stop, 
-  InProgress, 
+import {
+  Play,
+  Stop,
+  InProgress,
   CheckmarkFilled,
   WarningFilled,
   Restart
@@ -144,17 +144,17 @@ export function AgentControlButton({
     'relative transition-all duration-200 ease-out',
     'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background',
     'group overflow-hidden',
-    
+
     // Size
     sizeStyles.button,
-    
+
     // Interactive states
     canInteract && 'cursor-pointer hover:scale-105 active:scale-95',
     !canInteract && 'cursor-default',
-    
+
     // Disabled state
     disabled && 'opacity-50 cursor-not-allowed',
-    
+
     className
   );
 
@@ -184,16 +184,16 @@ export function AgentControlButton({
               <CheckmarkFilled className={cn(sizeStyles.icon, 'text-status-success animate-pulse')} />
             </div>
           )}
-          
+
           {/* Main icon */}
-          <IconComponent 
+          <IconComponent
             className={cn(
               iconClasses,
               showSuccess && 'opacity-0'
-            )} 
+            )}
           />
         </Button>
-        
+
         {/* Label text */}
         <span className={cn(
           sizeStyles.text,
@@ -222,15 +222,15 @@ export function AgentControlButton({
           <CheckmarkFilled className={cn(sizeStyles.icon, 'text-status-success animate-pulse')} />
         </div>
       )}
-      
+
       {/* Main icon */}
-      <IconComponent 
+      <IconComponent
         className={cn(
           iconClasses,
           showSuccess && 'opacity-0'
-        )} 
+        )}
       />
-      
+
       {/* Processing indicator */}
       {isProcessing && (
         <div className="absolute inset-0 rounded-lg animate-pulse bg-bg-hover/20" />

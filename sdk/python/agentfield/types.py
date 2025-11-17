@@ -3,8 +3,6 @@ from typing import Any, Dict, List, Literal, Optional
 from pydantic import BaseModel, Field
 from enum import Enum
 
-from . import litellm_adapters
-
 
 class AgentStatus(str, Enum):
     """Agent lifecycle status enum matching the Go backend"""
@@ -150,10 +148,14 @@ class AIConfig(BaseModel):
         description="Default LLM model to use (e.g., 'gpt-4o', 'claude-3-sonnet').",
     )
     temperature: Optional[float] = Field(
-        default=None, ge=0.0, le=2.0, description="Creativity level (0.0-2.0). If None, uses model's default."
+        default=None,
+        ge=0.0,
+        le=2.0,
+        description="Creativity level (0.0-2.0). If None, uses model's default.",
     )
     max_tokens: Optional[int] = Field(
-        default=None, description="Maximum response length. If None, uses model's default."
+        default=None,
+        description="Maximum response length. If None, uses model's default.",
     )
     top_p: Optional[float] = Field(
         default=None,
@@ -161,7 +163,10 @@ class AIConfig(BaseModel):
         le=1.0,
         description="Controls diversity via nucleus sampling. If None, uses model's default.",
     )
-    stream: Optional[bool] = Field(default=None, description="Enable streaming response. If None, uses model's default.")
+    stream: Optional[bool] = Field(
+        default=None,
+        description="Enable streaming response. If None, uses model's default.",
+    )
     response_format: Literal["auto", "json", "text"] = Field(
         default="auto", description="Desired response format."
     )
@@ -182,9 +187,13 @@ class AIConfig(BaseModel):
     )
 
     # Behavior settings
-    timeout: Optional[int] = Field(default=None, description="Timeout for AI calls in seconds. If None, uses LiteLLM's default.")
+    timeout: Optional[int] = Field(
+        default=None,
+        description="Timeout for AI calls in seconds. If None, uses LiteLLM's default.",
+    )
     retry_attempts: Optional[int] = Field(
-        default=None, description="Number of retry attempts for failed AI calls. If None, uses LiteLLM's default."
+        default=None,
+        description="Number of retry attempts for failed AI calls. If None, uses LiteLLM's default.",
     )
     retry_delay: float = Field(
         default=1.0, description="Delay between retries in seconds."
@@ -332,10 +341,11 @@ class AIConfig(BaseModel):
             info = None  # Ensure info is undefined outside except
 
         if info is not None:
-            context_length = getattr(info, "max_tokens", None) or fallback_context or 131072
-            max_output = (
-                getattr(info, "max_output_tokens", None)
-                or getattr(info, "max_completion_tokens", None)
+            context_length = (
+                getattr(info, "max_tokens", None) or fallback_context or 131072
+            )
+            max_output = getattr(info, "max_output_tokens", None) or getattr(
+                info, "max_completion_tokens", None
             )
         else:
             context_length = fallback_context or 8192
@@ -412,11 +422,6 @@ class AIConfig(BaseModel):
         """
         Get parameters formatted for LiteLLM, with runtime overrides and smart token management.
         LiteLLM handles environment variable detection automatically.
-
-        Only explicitly set parameters are included. LiteLLM will use its own defaults
-        for parameters not provided, ensuring compatibility with all supported models.
-
-        Provider-specific parameter transformations are applied via litellm_adapters module.
         """
         params = {
             "model": self.model,
@@ -448,12 +453,16 @@ class AIConfig(BaseModel):
         # Apply runtime overrides (highest priority)
         params.update(overrides)
 
-        # Remove None values - only pass explicitly set parameters to LiteLLM
-        params = litellm_adapters.filter_none_values(params)
+        # Remove None values
+        params = {k: v for k, v in params.items() if v is not None}
 
-        # Apply provider-specific parameter patches (e.g., OpenAI max_tokens mapping)
+        # OpenAI Responses API expects max_completion_tokens instead of max_tokens
         model_name = params.get("model") or self.model
-        params = litellm_adapters.apply_provider_patches(params, model_name)
+        provider = (
+            model_name.split("/", 1)[0] if model_name and "/" in model_name else None
+        )
+        if provider == "openai" and "max_tokens" in params:
+            params["max_completion_tokens"] = params.pop("max_tokens")
 
         return params
 

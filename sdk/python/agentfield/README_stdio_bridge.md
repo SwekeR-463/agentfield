@@ -39,14 +39,14 @@ async def main():
         "environment": {},
         "description": "Sequential thinking MCP server"
     }
-    
+
     # Create and start the bridge
     bridge = StdioMCPBridge(
         server_config=server_config,
         port=8200,
         dev_mode=True
     )
-    
+
     try:
         success = await bridge.start()
         if success:
@@ -74,12 +74,12 @@ async def test_bridge():
         async with session.get("http://localhost:8200/health") as response:
             health = await response.json()
             print(f"Health: {health}")
-        
+
         # List tools
         async with session.post("http://localhost:8200/mcp/tools/list") as response:
             tools = await response.json()
             print(f"Tools: {tools}")
-        
+
         # Call a tool
         tool_request = {
             "name": "example_tool",
@@ -127,7 +127,7 @@ Returns the health status of the bridge and stdio process.
 ```json
 {
   "status": "healthy",
-  "bridge": "running", 
+  "bridge": "running",
   "process": "running"
 }
 ```

@@ -79,4 +79,3 @@ The control plane orchestrates agent workflows, provides API endpoints, manages 
 - Extend SDKs by adding new modules in their respective directories.
 
 For operational details, see `docs/DEVELOPMENT.md` and `docs/SECURITY.md`.
-

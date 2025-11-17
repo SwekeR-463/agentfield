@@ -15,11 +15,11 @@ interface ExecutionFiltersProps {
   searchTerm: string;
 }
 
-export function ExecutionFilters({ 
-  filters, 
-  onFiltersChange, 
-  onSearch, 
-  searchTerm 
+export function ExecutionFilters({
+  filters,
+  onFiltersChange,
+  onSearch,
+  searchTerm
 }: ExecutionFiltersProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [localSearchTerm, setLocalSearchTerm] = useState(searchTerm);
@@ -103,7 +103,7 @@ export function ExecutionFilters({
             </div>
           </CardHeader>
         </CollapsibleTrigger>
-        
+
         <CollapsibleContent>
           <CardContent className="space-y-6">
             {/* Search */}
@@ -121,9 +121,9 @@ export function ExecutionFilters({
                   Search
                 </Button>
                 {localSearchTerm && (
-                  <Button 
-                    type="button" 
-                    variant="outline" 
+                  <Button
+                    type="button"
+                    variant="outline"
                     size="sm"
                     onClick={() => {
                       setLocalSearchTerm('');

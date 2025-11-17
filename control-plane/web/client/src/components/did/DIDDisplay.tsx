@@ -30,7 +30,7 @@ export function DIDDisplay({
 
   const handleCopyDID = async () => {
     if (!didInfo?.did) return;
-    
+
     const success = await copyDIDToClipboard(didInfo.did);
     if (success) {
       setCopied(true);
@@ -96,7 +96,7 @@ export function DIDDisplay({
             )}
           </button>
         </div>
-        
+
         {/* Enhanced tooltip with full DID on hover */}
         <div className="absolute bottom-full left-0 mb-3 px-3 py-2 bg-popover text-popover-foreground text-xs rounded-lg border border-border opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50 max-w-xs break-all shadow-lg">
           <div className="font-medium mb-1">Full DID</div>
@@ -148,7 +148,7 @@ export function DIDDisplay({
             {didInfo.did}
           </div>
         </div>
-        
+
         <div className="flex items-center gap-6 text-sm">
           <div className="flex items-center gap-2 text-muted-foreground">
             <div className="flex items-center justify-center w-5 h-5 rounded bg-muted border border-border">
@@ -191,7 +191,7 @@ export function DIDIdentityBadge({
   const handleCopyDID = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!didInfo?.did) return;
-    
+
     const success = await copyDIDToClipboard(didInfo.did);
     if (success) {
       setCopied(true);
@@ -215,7 +215,7 @@ export function DIDIdentityBadge({
         </div>
         <span className="text-xs font-medium text-status-success">Verified</span>
       </div>
-      
+
       {showDID && (
         <div className="flex items-center gap-2 px-3 py-1.5 bg-muted hover:bg-card-hover rounded-md text-xs transition-colors duration-150 group border border-border">
           <Identification size={12} className="text-muted-foreground" />

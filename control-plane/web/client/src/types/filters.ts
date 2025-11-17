@@ -7,21 +7,21 @@ export interface FilterTag {
   removable: boolean;
 }
 
-export type FilterType = 
+export type FilterType =
   | 'search'
-  | 'status' 
-  | 'agent' 
-  | 'workflow' 
-  | 'session' 
-  | 'actor' 
+  | 'status'
+  | 'agent'
+  | 'workflow'
+  | 'session'
+  | 'actor'
   | 'time'
   | 'group-by'
   | 'sort'
   | 'order';
 
-export type FilterColor = 
+export type FilterColor =
   | 'blue'
-  | 'green' 
+  | 'green'
   | 'purple'
   | 'orange'
   | 'red'

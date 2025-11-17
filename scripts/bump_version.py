@@ -139,7 +139,7 @@ def update_pkg_info(version: SemVer) -> None:
         return
     text = PKG_INFO_FILE.read_text(encoding="utf-8")
     new_text, count = re.subn(
-        r'(?m)^Version:\s+.+$', f"Version: {version}", text, count=1
+        r"(?m)^Version:\s+.+$", f"Version: {version}", text, count=1
     )
     if count != 1:
         raise RuntimeError("Failed to update Version field in PKG-INFO")

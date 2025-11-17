@@ -176,14 +176,14 @@ export const WorkflowNode = memo(({ data, selected }: WorkflowNodeProps) => {
     const minWidth = 200;  // Increased minimum width
     const maxWidth = 360;  // Increased maximum width for better readability
     const charWidth = 7.5; // More accurate character width for the font
-    
+
     const taskHuman = humanizeText(taskText);
     const agentHuman = humanizeText(agentText);
-    
+
     // Calculate width needed to fit text comfortably in two lines
     const taskWordsLength = taskHuman.split(' ').reduce((max, word) => Math.max(max, word.length), 0);
     const agentWordsLength = agentHuman.split(' ').reduce((max, word) => Math.max(max, word.length), 0);
-    
+
     // Base width on longest single word plus some buffer for multi-word lines
     const longestWord = Math.max(taskWordsLength, agentWordsLength);
     const estimatedWidth = Math.max(
@@ -191,7 +191,7 @@ export const WorkflowNode = memo(({ data, selected }: WorkflowNodeProps) => {
       (taskHuman.length / 2.2) * charWidth, // Divide by 2.2 instead of 2 for more generous spacing
       (agentHuman.length / 2.2) * charWidth
     ) + 80; // Increased padding for icons and spacing
-    
+
     return Math.min(maxWidth, Math.max(minWidth, estimatedWidth));
   };
 
@@ -199,13 +199,13 @@ export const WorkflowNode = memo(({ data, selected }: WorkflowNodeProps) => {
   const formatTextForDisplay = (text: string, nodeWidth: number, isAgentName: boolean = false) => {
     const humanText = humanizeText(text);
     const words = humanText.split(' ');
-    
+
     // Calculate available character space based on node width
     const availableWidth = nodeWidth - (isAgentName ? 100 : 80); // More space for agent names (account for icon)
     const charWidth = 7.5;
     const maxCharsForSingleLine = Math.floor(availableWidth / charWidth);
     const maxCharsPerLine = Math.floor(maxCharsForSingleLine * 0.9); // 90% for comfortable reading
-    
+
     // PRIORITY 1: Try to fit in single line (especially for agent names)
     if (humanText.length <= maxCharsForSingleLine || (isAgentName && humanText.length <= maxCharsForSingleLine * 1.1)) {
       return { line1: humanText, line2: "", isSingleLine: true };
@@ -230,12 +230,12 @@ export const WorkflowNode = memo(({ data, selected }: WorkflowNodeProps) => {
     // Multiple words - smart distribution
     let line1 = "";
     let line2 = "";
-    
+
     // Try to fit as many complete words as possible on first line
     for (let i = 0; i < words.length; i++) {
       const word = words[i];
       const testLine1 = line1 + (line1 ? " " : "") + word;
-      
+
       if (testLine1.length <= maxCharsPerLine || line1 === "") {
         line1 = testLine1;
       } else {
@@ -244,7 +244,7 @@ export const WorkflowNode = memo(({ data, selected }: WorkflowNodeProps) => {
         break;
       }
     }
-    
+
     // Ensure line2 isn't too long
     if (line2.length > maxCharsPerLine) {
       // Rebalance by moving some words back to line1 if possible
@@ -380,7 +380,7 @@ export const WorkflowNode = memo(({ data, selected }: WorkflowNodeProps) => {
 
       {/* Agent Badge - positioned in top-left */}
       <div className="absolute top-2 left-2 z-10">
-        <AgentBadge 
+        <AgentBadge
           agentName={data.agent_name || data.agent_node_id}
           agentId={data.agent_node_id}
           size="sm"

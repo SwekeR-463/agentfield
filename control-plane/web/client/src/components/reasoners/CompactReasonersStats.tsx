@@ -1,13 +1,13 @@
-import { 
-  Wifi, 
-  WifiOff, 
-  Grid, 
+import {
+  Wifi,
+  WifiOff,
+  Grid,
   Terminal,
   Renew
 } from "@/components/ui/icon-bridge";
 import { cn } from "../../lib/utils";
 import { Button } from "../ui/button";
-import { 
+import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
@@ -24,15 +24,15 @@ interface CompactReasonersStatsProps {
   className?: string;
 }
 
-export function CompactReasonersStats({ 
-  total = 0, 
-  onlineCount = 0, 
-  offlineCount = 0, 
-  nodesCount = 0, 
+export function CompactReasonersStats({
+  total = 0,
+  onlineCount = 0,
+  offlineCount = 0,
+  nodesCount = 0,
   lastRefresh,
   loading = false,
   onRefresh,
-  className 
+  className
 }: CompactReasonersStatsProps) {
   // Ensure we have safe values
   const safeTotal = total ?? 0;
@@ -58,7 +58,7 @@ export function CompactReasonersStats({
 
   const formatLastRefresh = (timestamp: Date) => {
     try {
-      return timestamp.toLocaleTimeString('en-US', { 
+      return timestamp.toLocaleTimeString('en-US', {
         hour: 'numeric',
         minute: '2-digit',
         second: '2-digit',
@@ -86,18 +86,18 @@ export function CompactReasonersStats({
             <span className="text-status-success font-medium">{safeOnlineCount}</span>
             <span className="text-body-small">online</span>
           </div>
-          
+
           <span className="text-muted-foreground/60">•</span>
-          
+
           {/* Offline Count */}
           <div className="flex items-center gap-2">
             <WifiOff className="h-4 w-4 text-status-neutral flex-shrink-0" />
             <span className="text-status-neutral font-medium">{safeOfflineCount}</span>
             <span className="text-body-small">offline</span>
           </div>
-          
+
           <span className="text-muted-foreground/60">•</span>
-          
+
           {/* Total Count */}
           <div className="flex items-center gap-2">
             <Grid className="h-4 w-4 text-text-tertiary flex-shrink-0" />
@@ -105,7 +105,7 @@ export function CompactReasonersStats({
             <span className="text-body-small">total</span>
           </div>
         </div>
-        
+
         {/* Center: Additional Metrics */}
         <div className="hidden md:flex items-center gap-3 text-body-small">
           <div className="flex items-center gap-2">
@@ -113,16 +113,16 @@ export function CompactReasonersStats({
             <span className="font-medium text-foreground">{safeNodesCount}</span>
             <span>nodes</span>
           </div>
-          
+
           <span>•</span>
-          
+
           <span>
             Health: <span className="font-medium text-foreground">
               {safeTotal > 0 ? Math.round((safeOnlineCount / safeTotal) * 100) : 0}%
             </span>
           </span>
         </div>
-        
+
         {/* Right: Last Updated + Refresh */}
         <div className="flex items-center gap-3 text-body-small flex-shrink-0">
           <HoverCard>
@@ -135,7 +135,7 @@ export function CompactReasonersStats({
               <p className="text-xs">{formatLastRefresh(safeLastRefresh)}</p>
             </HoverCardContent>
           </HoverCard>
-          
+
           {onRefresh && (
             <>
               <span>•</span>
@@ -152,7 +152,7 @@ export function CompactReasonersStats({
           )}
         </div>
       </div>
-      
+
       {/* Mobile: Additional Metrics Row */}
       <div className="md:hidden flex items-center gap-3 text-body-small mt-2 pt-2 border-t border-border/50">
         <div className="flex items-center gap-2">
@@ -160,17 +160,17 @@ export function CompactReasonersStats({
           <span className="font-medium text-foreground">{safeNodesCount}</span>
           <span>nodes</span>
         </div>
-        
+
         <span>•</span>
-        
+
         <span>
           Health: <span className="font-medium text-foreground">
             {safeTotal > 0 ? Math.round((safeOnlineCount / safeTotal) * 100) : 0}%
           </span>
         </span>
-        
+
         <span>•</span>
-        
+
         <span>
           Last: <span className="font-medium text-foreground">{formatRelativeTime(safeLastRefresh)} ago</span>
         </span>

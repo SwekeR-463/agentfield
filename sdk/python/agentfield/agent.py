@@ -1298,6 +1298,7 @@ class Agent(FastAPI):
     ) -> Any:
         import asyncio
         import time
+
         execution_context = ExecutionContext.from_request(request, self.node_id)
         payload_dict = input_model.model_dump()
 
@@ -1783,7 +1784,9 @@ class Agent(FastAPI):
                 except Exception as e:
                     # Log conversion errors but continue with original args for backward compatibility
                     if self.dev_mode:
-                        log_warn(f"Failed to convert arguments for skill '{skill_id}': {e}")
+                        log_warn(
+                            f"Failed to convert arguments for skill '{skill_id}': {e}"
+                        )
                     kwargs = dict(input_payload)
 
                 # Inject execution context if the function accepts it
@@ -2102,7 +2105,9 @@ class Agent(FastAPI):
 
                 # Preserve any include_router prefix (everything up to and including marker)
                 prefix_part = path_value[: idx + len(marker)]
-                if path_value.endswith(component_id) and path_value.startswith(prefix_part):
+                if path_value.endswith(component_id) and path_value.startswith(
+                    prefix_part
+                ):
                     # Already normalized
                     return path_value
 
@@ -3120,7 +3125,9 @@ class Agent(FastAPI):
             import requests
         except ImportError:
             if self.dev_mode:
-                log_warn("requests library unavailable, skipping workflow event emission")
+                log_warn(
+                    "requests library unavailable, skipping workflow event emission"
+                )
             return
 
         payload: Dict[str, Any] = {
@@ -3132,8 +3139,7 @@ class Agent(FastAPI):
             "agent_node_id": self.node_id,
             "status": status,
             "parent_execution_id": parent_execution_id,
-            "parent_workflow_id": context.parent_workflow_id
-            or context.workflow_id,
+            "parent_workflow_id": context.parent_workflow_id or context.workflow_id,
         }
 
         if input_data is not None:
@@ -3261,7 +3267,7 @@ class Agent(FastAPI):
         import sys
 
         # Check if CLI mode is requested
-        if len(sys.argv) > 1 and sys.argv[1] in ['call', 'list', 'shell', 'help']:
+        if len(sys.argv) > 1 and sys.argv[1] in ["call", "list", "shell", "help"]:
             # Run in CLI mode
             self.cli_handler.run_cli()
         else:

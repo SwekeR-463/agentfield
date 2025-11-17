@@ -6,18 +6,18 @@ import { Skeleton } from '../ui/skeleton';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Loader2, Save, AlertCircle, Eye, EyeOff, RefreshCw } from '@/components/ui/icon-bridge';
-import { 
-  getAgentEnvironmentVariables, 
-  updateAgentEnvironmentVariables, 
-  getAgentConfigurationSchema 
+import {
+  getAgentEnvironmentVariables,
+  updateAgentEnvironmentVariables,
+  getAgentConfigurationSchema
 } from '../../services/api';
-import { 
+import {
   useSuccessNotification,
   useErrorNotification
 } from '../ui/notification';
-import type { 
-  ConfigField, 
-  ConfigSchemaResponse 
+import type {
+  ConfigField,
+  ConfigSchemaResponse
 } from '../../types/agentfield';
 
 interface EnvironmentVariableFormProps {
@@ -70,7 +70,7 @@ export const EnvironmentVariableForm: React.FC<EnvironmentVariableFormProps> = (
 
       // Initialize field states
       const initialStates: Record<string, EnvFieldState> = {};
-      
+
       // Process required and optional fields from schema
       const allFields = [
         ...(schemaResponse.schema.user_environment?.required || []),
@@ -79,7 +79,7 @@ export const EnvironmentVariableForm: React.FC<EnvironmentVariableFormProps> = (
 
       allFields.forEach(field => {
         const currentValue = envResponse.variables[field.name] || field.default || '';
-        
+
         initialStates[field.name] = {
           value: currentValue,
           showSecret: false
@@ -200,10 +200,10 @@ export const EnvironmentVariableForm: React.FC<EnvironmentVariableFormProps> = (
       });
 
       await updateAgentEnvironmentVariables(agentId, packageId, variables);
-      
+
       showSuccess('Environment variables saved successfully');
       setHasChanges(false);
-      
+
       // Notify parent component about configuration change
       if (onConfigurationChange) {
         onConfigurationChange();
@@ -232,7 +232,7 @@ export const EnvironmentVariableForm: React.FC<EnvironmentVariableFormProps> = (
         {field.description && (
           <p className="text-body-small">{field.description}</p>
         )}
-        
+
         {isSecret ? (
           <div className="relative">
             <Input
@@ -269,7 +269,7 @@ export const EnvironmentVariableForm: React.FC<EnvironmentVariableFormProps> = (
             max={field.validation?.max}
           />
         )}
-        
+
         {error && (
           <p className="text-xs text-red-500">{error}</p>
         )}
@@ -331,7 +331,7 @@ export const EnvironmentVariableForm: React.FC<EnvironmentVariableFormProps> = (
           Configure environment variables for {packageName} (v{packageVersion})
         </CardDescription>
       </CardHeader>
-      
+
       <CardContent className="space-y-8">
         {/* Required Fields Section */}
         {requiredFields.length > 0 && (

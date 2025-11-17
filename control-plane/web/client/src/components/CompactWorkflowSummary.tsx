@@ -32,9 +32,9 @@ interface CompactWorkflowSummaryProps {
   onRefresh?: () => void;
 }
 
-export function CompactWorkflowSummary({ 
-  workflow, 
-  onClose, 
+export function CompactWorkflowSummary({
+  workflow,
+  onClose,
   className,
   isLiveUpdating,
   hasRunningWorkflows,
@@ -74,8 +74,8 @@ export function CompactWorkflowSummary({
 
   const formatStartedTime = (timestamp: string) => {
     const date = new Date(timestamp);
-    return date.toLocaleDateString('en-US', { 
-      month: 'short', 
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
       day: 'numeric',
       hour: 'numeric',
       minute: '2-digit',
@@ -132,20 +132,20 @@ export function CompactWorkflowSummary({
         <div className="flex items-center gap-3 min-w-0 flex-1">
           {/* Status Icon */}
           {getStatusIcon()}
-          
+
           {/* Workflow Name */}
           <span className="font-medium text-foreground truncate">
             {workflow.display_name || "Unnamed Workflow"}
           </span>
-          
+
           <span className="text-muted-foreground/60">•</span>
-          
+
           {/* Full Workflow ID */}
           <div className="flex items-center gap-2">
             <span className="text-body-small">ID:</span>
             <HoverCard>
               <HoverCardTrigger asChild>
-                <code 
+                <code
                   className="font-mono text-xs bg-muted/50 px-2 py-1 rounded cursor-pointer hover:bg-muted/70 transition-colors"
                   onDoubleClick={(event) => {
                     const selection = window.getSelection();
@@ -162,7 +162,7 @@ export function CompactWorkflowSummary({
                 <p className="text-xs">Double-click to select • Click copy to clipboard</p>
               </HoverCardContent>
             </HoverCard>
-            
+
             <Button
               variant="ghost"
               size="sm"
@@ -171,7 +171,7 @@ export function CompactWorkflowSummary({
             >
               <CopySimple className="h-3 w-3" />
             </Button>
-            
+
             {copied && (
               <span className={cn("text-xs font-medium animate-in fade-in duration-200", statusTone.success.accent)}>
                 ✓
@@ -179,7 +179,7 @@ export function CompactWorkflowSummary({
             )}
           </div>
         </div>
-        
+
         {/* Center: Metrics */}
         <div className="hidden md:flex items-center gap-3 text-body-small">
           <span>Exec: <span className="font-medium text-foreground">{workflow.total_executions}</span></span>
@@ -200,7 +200,7 @@ export function CompactWorkflowSummary({
               </span>
             </>
           )}
-          
+
           {/* Live Update Status */}
           {isLiveUpdating && (
             <>
@@ -256,7 +256,7 @@ export function CompactWorkflowSummary({
             </>
           )}
         </div>
-        
+
         {/* Right: Timestamps + Close */}
         <div className="flex items-center gap-3 text-body-small flex-shrink-0">
           <HoverCard>
@@ -269,7 +269,7 @@ export function CompactWorkflowSummary({
               <p className="text-xs">{new Date(workflow.started_at).toLocaleString()}</p>
             </HoverCardContent>
           </HoverCard>
-          
+
           {workflow.latest_activity && (
             <>
               <span>•</span>
@@ -285,7 +285,7 @@ export function CompactWorkflowSummary({
               </HoverCard>
             </>
           )}
-          
+
           {onClose && (
             <>
               <span>•</span>
@@ -301,7 +301,7 @@ export function CompactWorkflowSummary({
           )}
         </div>
       </div>
-      
+
       {/* Mobile: Metrics Row */}
       <div className="md:hidden flex items-center gap-3 text-body-small mt-2 pt-2 border-t border-border/50">
         <span>Exec: <span className="font-medium text-foreground">{workflow.total_executions}</span></span>
@@ -311,7 +311,7 @@ export function CompactWorkflowSummary({
         <span className="font-mono">{formatDuration(workflow.duration_ms)}</span>
         <span>•</span>
         <span>Agent: <span className="font-medium text-foreground">{workflow.agent_name}</span></span>
-        
+
         {/* Mobile Live Update Status */}
         {isLiveUpdating && (
           <>

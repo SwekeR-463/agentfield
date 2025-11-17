@@ -12,7 +12,7 @@ export function useDIDInfo(nodeId: string) {
 
   const fetchDIDInfo = useCallback(async () => {
     if (!nodeId) return;
-    
+
     try {
       setLoading(true);
       setError(null);
@@ -48,7 +48,7 @@ export function useDIDStatus(nodeId: string) {
 
   const fetchStatus = useCallback(async () => {
     if (!nodeId) return;
-    
+
     try {
       setLoading(true);
       setError(null);
@@ -87,11 +87,11 @@ export function useMultipleDIDStatuses(nodeIds: string[]) {
       setLoading(false);
       return;
     }
-    
+
     try {
       setLoading(true);
       setError(null);
-      
+
       // Fetch statuses in parallel
       const statusPromises = nodeIds.map(async (nodeId) => {
         try {
@@ -99,8 +99,8 @@ export function useMultipleDIDStatuses(nodeIds: string[]) {
           return { nodeId, status };
         } catch (err) {
           console.warn(`Failed to fetch DID status for node ${nodeId}:`, err);
-          return { 
-            nodeId, 
+          return {
+            nodeId,
             status: {
               has_did: false,
               did_status: 'inactive' as const,
@@ -111,13 +111,13 @@ export function useMultipleDIDStatuses(nodeIds: string[]) {
           };
         }
       });
-      
+
       const results = await Promise.all(statusPromises);
       const statusMap = results.reduce((acc, { nodeId, status }) => {
         acc[nodeId] = status;
         return acc;
       }, {} as Record<string, DIDStatusSummary>);
-      
+
       setStatuses(statusMap);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch DID statuses');

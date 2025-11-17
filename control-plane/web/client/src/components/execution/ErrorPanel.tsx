@@ -30,18 +30,18 @@ export function ErrorPanel({ execution, onRetry, onViewLogs }: ErrorPanelProps) 
           )}
         </div>
       </CardHeader>
-      
+
       <CardContent>
         <div className="bg-red-100/50 dark:bg-red-950/30 rounded-lg p-4 font-mono text-sm mb-4">
           <pre className="whitespace-pre-wrap text-red-800 dark:text-red-200">
             {execution.error_message}
           </pre>
         </div>
-        
+
         <div className="flex items-center gap-3">
           {onRetry && (
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="border-red-300 text-red-700 hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-950/30"
               onClick={onRetry}
             >

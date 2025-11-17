@@ -13,8 +13,8 @@ const API_V2_BASE_URL = import.meta.env.VITE_API_V2_BASE_URL || '/api/ui/v2';
 async function fetchWrapper<T>(url: string, options?: RequestInit, baseUrl: string = API_V1_BASE_URL): Promise<T> {
   const response = await fetch(`${baseUrl}${url}`, options);
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ 
-      message: 'Request failed with status ' + response.status 
+    const errorData = await response.json().catch(() => ({
+      message: 'Request failed with status ' + response.status
     }));
     throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
   }
@@ -23,7 +23,7 @@ async function fetchWrapper<T>(url: string, options?: RequestInit, baseUrl: stri
 
 function buildQueryString(params: Record<string, any>): string {
   const searchParams = new URLSearchParams();
-  
+
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== '') {
       if (Array.isArray(value)) {
@@ -33,7 +33,7 @@ function buildQueryString(params: Record<string, any>): string {
       }
     }
   });
-  
+
   return searchParams.toString();
 }
 
@@ -391,7 +391,7 @@ export async function searchExecutionData(
     ...filters,
     search: searchTerm
   };
-  
+
   return getExecutionsByViewMode(viewMode, searchFilters, page, pageSize);
 }
 
@@ -418,10 +418,10 @@ export async function getExecutionViewStats(
     ...filters,
     view_mode: viewMode
   };
-  
+
   const queryString = buildQueryString(queryParams);
   const url = `/executions/view-stats${queryString ? `?${queryString}` : ''}`;
-  
+
   return fetchWrapper<any>(url);
 }
 
@@ -465,7 +465,7 @@ export async function deleteWorkflows(
   }
 
   const results: WorkflowCleanupResult[] = [];
-  
+
   // Process deletions sequentially to avoid overwhelming the server
   for (const workflowId of uniqueIds) {
     try {
@@ -484,6 +484,6 @@ export async function deleteWorkflows(
       });
     }
   }
-  
+
   return results;
 }

@@ -304,7 +304,7 @@ export function VCVerificationCard({
                               {vcData.caller_did}
                             </p>
                           </div>
-                          
+
                           <div>
                             <label className="text-xs font-medium text-tertiary-foundation uppercase tracking-wide">
                               Target DID
@@ -314,7 +314,7 @@ export function VCVerificationCard({
                             </p>
                           </div>
                         </div>
-                        
+
                         {/* Hash Information */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
@@ -325,7 +325,7 @@ export function VCVerificationCard({
                               {vcData.input_hash}
                             </p>
                           </div>
-                          
+
                           <div>
                             <label className="text-xs font-medium text-tertiary-foundation uppercase tracking-wide">
                               Output Hash
@@ -335,7 +335,7 @@ export function VCVerificationCard({
                             </p>
                           </div>
                         </div>
-                        
+
                         {/* Signature */}
                         <div>
                           <label className="text-xs font-medium text-tertiary-foundation uppercase tracking-wide">
@@ -347,7 +347,7 @@ export function VCVerificationCard({
                         </div>
                       </>
                     )}
-                    
+
                     {/* Workflow VC specific details */}
                     {'component_vcs' in vcData && (
                       <>
@@ -360,7 +360,7 @@ export function VCVerificationCard({
                               {vcData.component_vcs.length} execution VCs
                             </p>
                           </div>
-                          
+
                           <div>
                             <label className="text-xs font-medium text-tertiary-foundation uppercase tracking-wide">
                               Progress
@@ -370,7 +370,7 @@ export function VCVerificationCard({
                             </p>
                           </div>
                         </div>
-                        
+
                         {vcData.start_time && (
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
@@ -381,7 +381,7 @@ export function VCVerificationCard({
                                 {formatDate(vcData.start_time)}
                               </p>
                             </div>
-                            
+
                             {vcData.end_time && (
                               <div>
                                 <label className="text-xs font-medium text-tertiary-foundation uppercase tracking-wide">

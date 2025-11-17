@@ -6,9 +6,9 @@ import {
   Chat
 } from "@/components/ui/icon-bridge";
 import { useCallback, useEffect, useState } from "react";
-import { 
-  getExecutionNotes, 
-  getExecutionNoteTags 
+import {
+  getExecutionNotes,
+  getExecutionNoteTags
 } from "../../services/executionsApi";
 import type { ExecutionNote, NotesFilters } from "../../types/notes";
 import { Button } from "../ui/button";
@@ -97,8 +97,8 @@ export function NotesPanel({ executionId, className = "" }: NotesPanelProps) {
   const filteredAndSortedNotes = state.notes
     .filter(note => {
       if (filters.tags && filters.tags.length > 0) {
-        return filters.tags.some(filterTag => 
-          note.tags.some(noteTag => 
+        return filters.tags.some(filterTag =>
+          note.tags.some(noteTag =>
             noteTag.toLowerCase().includes(filterTag.toLowerCase())
           )
         );
@@ -190,7 +190,7 @@ export function NotesPanel({ executionId, className = "" }: NotesPanelProps) {
               </span>
             )}
           </CardTitle>
-          
+
           <div className="flex items-center gap-2">
             {/* Sort toggle */}
             <Button

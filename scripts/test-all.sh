@@ -20,4 +20,3 @@ else
 fi
 
 echo "All tests passed."
-

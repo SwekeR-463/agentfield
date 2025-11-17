@@ -35,12 +35,12 @@ FIRST_NODE=$(curl -s "$AGENTFIELD_SERVER/api/ui/v1/nodes" | jq -r '.[0].id // em
 
 if [ -n "$FIRST_NODE" ] && [ "$FIRST_NODE" != "null" ]; then
     echo "✅ Found node: $FIRST_NODE"
-    
+
     # Test node MCP health
     echo ""
     echo "4. Testing node MCP health..."
     curl -s "$AGENTFIELD_SERVER/api/ui/v1/nodes/$FIRST_NODE/mcp/health" | jq . 2>/dev/null || echo "❌ Failed to get node MCP health"
-    
+
     # Test developer mode
     echo ""
     echo "5. Testing developer mode..."

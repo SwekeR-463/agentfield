@@ -112,8 +112,8 @@ export function DIDCountBadge({
   }
 
   return (
-    <Badge 
-      variant="outline" 
+    <Badge
+      variant="outline"
       className={`inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border transition-colors duration-150 ${config.color} ${className}`}
     >
       <config.icon size={12} />

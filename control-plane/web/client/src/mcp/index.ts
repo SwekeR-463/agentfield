@@ -1,6 +1,6 @@
 /**
  * Comprehensive MCP (Model Context Protocol) Module Export
- * 
+ *
  * This file provides a centralized export for all MCP-related functionality,
  * including components, hooks, utilities, and types for easy importing.
  */

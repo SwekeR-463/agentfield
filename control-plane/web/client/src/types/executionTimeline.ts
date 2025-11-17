@@ -68,17 +68,17 @@ export interface ExecutionTimelineHookReturn extends ExecutionTimelineState {
   refresh: () => void;
   clearError: () => void;
   reset: () => void;
-  
+
   // Computed properties
   hasData: boolean;
   hasError: boolean;
   isRefreshing: boolean;
   isEmpty: boolean;
-  
+
   // Cache info
   isCached: boolean;
   cacheAge: number | null;
-  
+
   // Data access helpers
   timelineData: TimelineDataPoint[];
   summary: TimelineSummary | null;

@@ -20,11 +20,7 @@ async def main():
     try:
         result = await client.call(
             "test-pydantic-skill.ingest_with_pydantic",
-            request={
-                "document_id": "doc-123",
-                "path": "/tmp/test.txt",
-                "text": None
-            }
+            request={"document_id": "doc-123", "path": "/tmp/test.txt", "text": None},
         )
         print(f"✅ Success! Result: {result}")
     except Exception as e:
@@ -37,7 +33,7 @@ async def main():
             "test-pydantic-skill.ingest_with_plain_params",
             document_id="doc-456",
             path="/tmp/test2.txt",
-            text="Hello World"
+            text="Hello World",
         )
         print(f"✅ Success! Result: {result}")
     except Exception as e:

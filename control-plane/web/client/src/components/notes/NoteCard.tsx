@@ -75,7 +75,7 @@ export function NoteCard({ note, onTagClick, className = "" }: NoteCardProps) {
               {formatTimestamp(note.timestamp)}
             </span>
           </div>
-          
+
           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-fast">
             <Button
               variant="ghost"

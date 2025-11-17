@@ -49,7 +49,7 @@ interface MCPHealthState {
 
 /**
  * Custom hook for managing MCP health data with real-time updates and caching
- * 
+ *
  * @param nodeId - The node ID to monitor (null to disable)
  * @param options - Configuration options
  * @returns Object containing health state and control functions
@@ -68,7 +68,7 @@ export function useMCPHealth(
   } = options;
 
   const { mode } = useMode();
-  
+
   const [state, setState] = useState<MCPHealthState>({
     summary: null,
     servers: [],
@@ -109,7 +109,7 @@ export function useMCPHealth(
   const isCacheValid = useCallback(() => {
     const cache = cacheRef.current;
     if (!cache.data || cache.mode !== mode) return false;
-    
+
     const age = Date.now() - cache.timestamp;
     return age < cacheTtl;
   }, [mode, cacheTtl]);
@@ -122,7 +122,7 @@ export function useMCPHealth(
 
     const servers = response.mcp_servers || [];
     const sortedServers = sortByPriority ? sortServersByPriority(servers) : servers;
-    
+
     const newSummary = response.mcp_summary || aggregateMCPSummary(servers);
 
     setState(prev => {
@@ -184,7 +184,7 @@ export function useMCPHealth(
       updateStateFromResponse(response);
     } catch (error) {
       if (!mountedRef.current) return;
-      
+
       const errorMessage = error instanceof Error ? error.message : 'Failed to fetch health data';
       setState(prev => ({
         ...prev,
@@ -252,7 +252,7 @@ export function useMCPHealth(
         });
 
         const newSummary = aggregateMCPSummary(updatedServers);
-        
+
         // Trigger callback for health change
         if (onHealthChange && prev.summary) {
           if (prev.summary.overall_health !== newSummary.overall_health ||
@@ -272,7 +272,7 @@ export function useMCPHealth(
       markStale();
       fetchHealth();
     }
-  }, [latestEvent, nodeId, enableRealTime, onServerStatusChange, onHealthChange, 
+  }, [latestEvent, nodeId, enableRealTime, onServerStatusChange, onHealthChange,
       sortByPriority, markStale, fetchHealth]);
 
   /**
@@ -329,8 +329,8 @@ export function useMCPHealth(
    * Get servers with issues
    */
   const getProblematicServers = useCallback(() => {
-    return state.servers.filter(server => 
-      server.status === 'error' || 
+    return state.servers.filter(server =>
+      server.status === 'error' ||
       server.error_message ||
       (server.success_rate !== undefined && server.success_rate < 0.9)
     );
@@ -347,19 +347,19 @@ export function useMCPHealth(
   return {
     // State
     ...state,
-    
+
     // Real-time connection status
     realTimeConnected: sseConnected,
-    
+
     // Control functions
     refresh,
     markStale,
-    
+
     // Utility functions
     getServersByStatus,
     getProblematicServers,
     getHealthEvents,
-    
+
     // Computed properties
     hasData: state.summary !== null,
     hasServers: state.servers.length > 0,

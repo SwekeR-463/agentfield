@@ -59,7 +59,7 @@ export function ExecutionPanel({ execution, onClose, isOpen, task_name, agent_na
   const getRelativeTime = (date: Date) => {
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
-    
+
     if (diffMs < 60000) return 'Just now';
     if (diffMs < 3600000) return `${Math.floor(diffMs / 60000)}m ago`;
     if (diffMs < 86400000) return `${Math.floor(diffMs / 3600000)}h ago`;
@@ -121,7 +121,7 @@ export function ExecutionPanel({ execution, onClose, isOpen, task_name, agent_na
             <Time className="h-4 w-4" />
             Timing
           </h4>
-          
+
           <div className="space-y-3 pl-6">
             <div className="space-y-1">
               <div className="text-body-small">Started</div>
@@ -152,7 +152,7 @@ export function ExecutionPanel({ execution, onClose, isOpen, task_name, agent_na
             <Layers className="h-4 w-4" />
             Workflow
           </h4>
-          
+
           <div className="space-y-3 pl-6">
             <div className="space-y-1">
               <div className="text-body-small">Depth Level</div>
@@ -187,7 +187,7 @@ export function ExecutionPanel({ execution, onClose, isOpen, task_name, agent_na
         {/* IDs Section */}
         <div className="space-y-4">
           <h4 className="text-sm font-medium text-foreground">Identifiers</h4>
-          
+
           <div className="space-y-3 pl-6">
             <div className="space-y-1">
               <div className="text-body-small">Execution ID</div>

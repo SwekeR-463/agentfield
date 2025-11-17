@@ -33,27 +33,19 @@ async def ingest_with_pydantic(request: IngestRequest) -> IngestResult:
     print(f"path: {request.path}")
     print(f"text: {request.text}")
 
-    return IngestResult(
-        document_id=request.document_id,
-        processed=True
-    )
+    return IngestResult(document_id=request.document_id, processed=True)
 
 
 @app.skill()
 async def ingest_with_plain_params(
-    document_id: str,
-    path: str | None = None,
-    text: str | None = None
+    document_id: str, path: str | None = None, text: str | None = None
 ) -> IngestResult:
     """Test skill using plain parameters (backward compatibility)."""
     print(f"Received document_id: {document_id}")
     print(f"Received path: {path}")
     print(f"Received text: {text}")
 
-    return IngestResult(
-        document_id=document_id,
-        processed=True
-    )
+    return IngestResult(document_id=document_id, processed=True)
 
 
 if __name__ == "__main__":

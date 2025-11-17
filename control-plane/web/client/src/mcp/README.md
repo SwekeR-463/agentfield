@@ -117,7 +117,7 @@ function ServerManager({ nodeId }: { nodeId: string }) {
   };
 
   return (
-    <button 
+    <button
       onClick={() => handleRestart('my-server')}
       disabled={loading}
     >
@@ -170,7 +170,7 @@ function MCPDashboard({ nodeId }: { nodeId: string }) {
   return (
     <div>
       <h1>MCP Dashboard</h1>
-      
+
       {/* Health Overview */}
       <div>
         Health: {mcp.health.isHealthy ? 'Good' : 'Issues Detected'}
@@ -266,8 +266,8 @@ Skeleton screens provide better perceived performance:
 ```typescript
 import { LoadingWrapper, MCPServerListSkeleton } from '@/components/LoadingSkeleton';
 
-<LoadingWrapper 
-  loading={loading} 
+<LoadingWrapper
+  loading={loading}
   skeleton={<MCPServerListSkeleton />}
 >
   <MCPServerList servers={servers} />
@@ -289,12 +289,12 @@ import { renderHook } from '@testing-library/react-hooks';
 import { useMCPHealth } from '@/mcp';
 
 test('should fetch health data', async () => {
-  const { result, waitForNextUpdate } = renderHook(() => 
+  const { result, waitForNextUpdate } = renderHook(() =>
     useMCPHealth('test-node')
   );
-  
+
   await waitForNextUpdate();
-  
+
   expect(result.current.summary).toBeDefined();
 });
 ```
@@ -307,7 +307,7 @@ import { MCPServerList } from '@/mcp';
 
 test('should display server list', () => {
   render(<MCPServerList servers={mockServers} nodeId="test" />);
-  
+
   expect(screen.getByText('Server 1')).toBeInTheDocument();
 });
 ```

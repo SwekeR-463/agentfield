@@ -47,7 +47,7 @@ interface SSEEvent<T = any> {
 /**
  * Custom hook for managing Server-Sent Events connections with automatic reconnection
  * and event filtering capabilities.
- * 
+ *
  * @param url - The SSE endpoint URL
  * @param options - Configuration options for the SSE connection
  * @returns Object containing connection state, events, and control functions
@@ -144,13 +144,13 @@ export function useSSE<T = any>(
       }
 
       const data = JSON.parse(event.data);
-      
+
       // Enhanced validation to prevent Object.entries() errors downstream
       if (!data || typeof data !== 'object' || data === null) {
         console.warn('🚨 SSE: Parsed data is not a valid object:', data);
         return;
       }
-      
+
       // Extract the actual event type from the data if it's a NodeEvent structure
       // Backend sends NodeEvent with { type, node_id, status, timestamp, data }
       let actualEventType = eventType;
@@ -158,7 +158,7 @@ export function useSSE<T = any>(
         actualEventType = data.type;
         console.log('🔍 SSE: Extracted event type from data:', actualEventType);
       }
-      
+
       const sseEvent: SSEEvent<T> = {
         type: actualEventType,
         data,
@@ -190,7 +190,7 @@ export function useSSE<T = any>(
 
       eventSource.onopen = () => {
         if (!mountedRef.current) return;
-        
+
         console.log('✅ SSE: Connection opened for URL:', url);
         setState(prev => ({
           ...prev,
@@ -199,7 +199,7 @@ export function useSSE<T = any>(
           reconnectAttempt: 0,
           lastError: null
         }));
-        
+
         onConnectionChange?.(true);
       };
 
@@ -228,7 +228,7 @@ export function useSSE<T = any>(
 
       // Register custom event listeners
       eventTypes.forEach(eventType => {
-        eventSource.addEventListener(eventType, (event) => 
+        eventSource.addEventListener(eventType, (event) =>
           handleEvent(event as MessageEvent, eventType)
         );
       });
@@ -301,17 +301,17 @@ export function useSSE<T = any>(
     reconnecting: state.reconnecting,
     reconnectAttempt: state.reconnectAttempt,
     lastError: state.lastError,
-    
+
     // Events
     events,
     latestEvent,
-    
+
     // Control functions
     reconnect,
     disconnect: closeConnection,
     clearEvents,
     getEventsByType,
-    
+
     // Utility
     hasEvents: events.length > 0,
     eventCount: events.length
@@ -323,7 +323,7 @@ export function useSSE<T = any>(
  */
 export function useMCPHealthSSE(nodeId: string | null) {
   const url = nodeId ? `/api/ui/v1/nodes/${nodeId}/mcp/events` : null;
-  
+
   return useSSE(url, {
     eventTypes: ['server_status_change', 'tool_execution', 'health_update', 'error'],
     autoReconnect: true,
@@ -338,7 +338,7 @@ export function useMCPHealthSSE(nodeId: string | null) {
  */
 export function useNodeEventsSSE() {
   const url = '/api/ui/v1/nodes/events';
-  
+
   return useSSE(url, {
     eventTypes: [
       'node_registered',
@@ -366,7 +366,7 @@ export function useNodeEventsSSE() {
  */
 export function useUnifiedStatusSSE() {
   const url = '/api/ui/v1/nodes/events';
-  
+
   return useSSE(url, {
     eventTypes: [
       'node_unified_status_changed',
@@ -389,7 +389,7 @@ export function useNodeUnifiedStatusSSE(_nodeId: string | null) {
   // streams all node events and filtering happens on the client side
   // The nodeId parameter is reserved for future client-side filtering implementation
   const url = '/api/ui/v1/nodes/events';
-  
+
   return useSSE(url, {
     eventTypes: [
       'node_unified_status_changed',

@@ -63,7 +63,7 @@ CREATE TABLE agent_dids_new (
     registered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    
+
     -- Foreign key constraints
     FOREIGN KEY (agentfield_server_id) REFERENCES did_registry(agentfield_server_id) ON DELETE CASCADE
 );

@@ -1,7 +1,7 @@
 -- Migration Runner: DID Schema Migration Script
 -- Description: Complete DID database schema setup for the AgentField platform
 -- Created: 2025-01-08
--- 
+--
 -- This script creates all necessary tables for the DID (Decentralized Identity) implementation
 -- in the AgentField platform, enabling the transition from file-based to database-backed storage.
 
@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS schema_migrations (
 );
 
 -- Insert migration records
-INSERT OR IGNORE INTO schema_migrations (version, description) VALUES 
+INSERT OR IGNORE INTO schema_migrations (version, description) VALUES
     ('001', 'Create DID Registry table'),
     ('002', 'Create Agent DIDs table'),
     ('003', 'Create Component DIDs table'),
@@ -27,28 +27,28 @@ CREATE INDEX IF NOT EXISTS idx_component_dids_type_exposure ON component_dids(co
 CREATE INDEX IF NOT EXISTS idx_agent_dids_org_status ON agent_dids(organization_id, status);
 
 -- Create triggers for automatic timestamp updates
-CREATE TRIGGER IF NOT EXISTS update_agent_dids_timestamp 
+CREATE TRIGGER IF NOT EXISTS update_agent_dids_timestamp
     AFTER UPDATE ON agent_dids
     FOR EACH ROW
     BEGIN
         UPDATE agent_dids SET updated_at = CURRENT_TIMESTAMP WHERE did = NEW.did;
     END;
 
-CREATE TRIGGER IF NOT EXISTS update_component_dids_timestamp 
+CREATE TRIGGER IF NOT EXISTS update_component_dids_timestamp
     AFTER UPDATE ON component_dids
     FOR EACH ROW
     BEGIN
         UPDATE component_dids SET updated_at = CURRENT_TIMESTAMP WHERE did = NEW.did;
     END;
 
-CREATE TRIGGER IF NOT EXISTS update_execution_vcs_timestamp 
+CREATE TRIGGER IF NOT EXISTS update_execution_vcs_timestamp
     AFTER UPDATE ON execution_vcs
     FOR EACH ROW
     BEGIN
         UPDATE execution_vcs SET updated_at = CURRENT_TIMESTAMP WHERE vc_id = NEW.vc_id;
     END;
 
-CREATE TRIGGER IF NOT EXISTS update_workflow_vcs_timestamp 
+CREATE TRIGGER IF NOT EXISTS update_workflow_vcs_timestamp
     AFTER UPDATE ON workflow_vcs
     FOR EACH ROW
     BEGIN
@@ -57,7 +57,7 @@ CREATE TRIGGER IF NOT EXISTS update_workflow_vcs_timestamp
 
 -- Create helpful views for DID management
 CREATE VIEW IF NOT EXISTS did_hierarchy_view AS
-SELECT 
+SELECT
     dr.organization_id,
     dr.root_did,
     ad.did as agent_did,
@@ -74,7 +74,7 @@ ORDER BY dr.organization_id, ad.agent_node_id, cd.component_type, cd.function_na
 
 -- Create view for VC audit trail
 CREATE VIEW IF NOT EXISTS vc_audit_trail AS
-SELECT 
+SELECT
     evc.vc_id,
     evc.execution_id,
     evc.workflow_id,

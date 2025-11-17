@@ -15,11 +15,11 @@ export function useFocusManagement() {
       if (document.activeElement && document.activeElement !== document.body) {
         (document.activeElement as HTMLElement).blur();
       }
-      
+
       // Focus the document body to ensure trackpad gestures work
       // This gives the page focus without showing a visible outline
       document.body.focus();
-      
+
       // Ensure the page is scrolled to top on route change
       window.scrollTo(0, 0);
     }, 100);
@@ -34,7 +34,7 @@ export function useFocusManagement() {
       if (document.activeElement && document.activeElement !== document.body) {
         (document.activeElement as HTMLElement).blur();
       }
-      
+
       // Focus the body for trackpad navigation
       document.body.focus();
     };

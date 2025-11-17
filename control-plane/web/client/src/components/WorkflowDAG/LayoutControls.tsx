@@ -63,11 +63,11 @@ export function LayoutControls({
                       <AlertTriangle className="w-3 h-3 ml-1 text-amber-500" />
                     )}
                   </Button>
-                  
+
                   {/* Slow layout warning badge */}
                   {isSlow && isLargeGraph && (
-                    <Badge 
-                      variant="secondary" 
+                    <Badge
+                      variant="secondary"
                       className="absolute -top-1 -right-1 h-4 px-1 text-[10px] bg-amber-100 text-amber-800 border-amber-200"
                     >
                       SLOW
@@ -91,17 +91,17 @@ export function LayoutControls({
           );
         })}
       </div>
-      
+
       {/* Progress bar for layout application */}
       {isApplyingLayout && layoutProgress > 0 && layoutProgress < 100 && (
         <div className="mt-2 w-full bg-muted rounded-full h-1">
-          <div 
+          <div
             className="bg-primary h-1 rounded-full transition-all duration-300 ease-out"
             style={{ width: `${layoutProgress}%` }}
           />
         </div>
       )}
-      
+
       {/* Graph size indicator */}
       <div className="mt-1 text-[10px] text-muted-foreground text-center">
         {isLargeGraph ? 'Large Graph Mode' : 'Small Graph Mode'}

@@ -49,7 +49,7 @@ interface ServerOperationOptions {
 /**
  * Custom hook for managing MCP server operations (start, stop, restart)
  * with support for bulk operations and optimistic updates
- * 
+ *
  * @param nodeId - The node ID for server operations
  * @returns Object containing server management state and functions
  */
@@ -116,10 +116,10 @@ export function useMCPServers(nodeId: string | null) {
    */
   const cleanupOperations = useCallback(() => {
     const cutoff = new Date(Date.now() - 30000); // 30 seconds ago
-    
+
     setState(prev => ({
       ...prev,
-      operations: prev.operations.filter(op => 
+      operations: prev.operations.filter(op =>
         op.status === 'pending' || op.timestamp > cutoff
       )
     }));
@@ -166,7 +166,7 @@ export function useMCPServers(nodeId: string | null) {
       }
 
       onComplete?.(response);
-      
+
       // Cleanup after a delay
       setTimeout(cleanupOperations, 5000);
 
@@ -175,13 +175,13 @@ export function useMCPServers(nodeId: string | null) {
       if (!mountedRef.current) return null;
 
       const errorMessage = error instanceof Error ? error.message : 'Operation failed';
-      
+
       if (optimistic) {
         updateOperation(serverId, action, 'error', errorMessage);
       }
 
       onError?.(errorMessage, serverId, action);
-      
+
       // Cleanup after a delay
       setTimeout(cleanupOperations, 10000);
 
@@ -335,7 +335,7 @@ export function useMCPServers(nodeId: string | null) {
     const serverIds = servers
       .filter(server => server.status === status)
       .map(server => server.alias);
-    
+
     return startServers(serverIds, options);
   }, [startServers]);
 
@@ -349,7 +349,7 @@ export function useMCPServers(nodeId: string | null) {
     const serverIds = servers
       .filter(server => server.status === 'running')
       .map(server => server.alias);
-    
+
     return restartServers(serverIds, options);
   }, [restartServers]);
 
@@ -363,7 +363,7 @@ export function useMCPServers(nodeId: string | null) {
     const serverIds = servers
       .filter(server => server.status === 'running')
       .map(server => server.alias);
-    
+
     return stopServers(serverIds, options);
   }, [stopServers]);
 
@@ -397,7 +397,7 @@ export function useMCPServers(nodeId: string | null) {
    * Check if server has pending operations
    */
   const isServerBusy = useCallback((serverId: string) => {
-    return state.operations.some(op => 
+    return state.operations.some(op =>
       op.serverId === serverId && op.status === 'pending'
     );
   }, [state.operations]);
@@ -428,32 +428,32 @@ export function useMCPServers(nodeId: string | null) {
   return {
     // State
     ...state,
-    
+
     // Single server operations
     startServer,
     stopServer,
     restartServer,
-    
+
     // Bulk operations
     startServers,
     stopServers,
     restartServers,
-    
+
     // Convenience operations
     startServersByStatus,
     restartAllRunning,
     stopAllRunning,
-    
+
     // State management
     clearOperations,
     clearError,
-    
+
     // Utility functions
     getServerOperations,
     isServerBusy,
     getPendingCount,
     getRecentOperations,
-    
+
     // Computed properties
     hasOperations: state.operations.length > 0,
     hasPendingOperations: state.operations.some(op => op.status === 'pending'),

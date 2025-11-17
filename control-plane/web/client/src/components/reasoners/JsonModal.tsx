@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { 
-  Close, 
-  Copy, 
-  Download, 
-  Code, 
+import {
+  Close,
+  Copy,
+  Download,
+  Code,
   View,
   ChevronRight
 } from '@/components/ui/icon-bridge';
@@ -28,7 +28,7 @@ export function JsonModal({ isOpen, onClose, content, path, title }: JsonModalPr
     { value: 'formatted', label: 'Formatted', icon: View },
     { value: 'raw', label: 'Raw', icon: Code },
   ];
-  
+
   const handleCopy = () => {
     const textToCopy = typeof content === 'string' ? content : JSON.stringify(content, null, 2);
     navigator.clipboard.writeText(textToCopy);
@@ -61,7 +61,7 @@ export function JsonModal({ isOpen, onClose, content, path, title }: JsonModalPr
       if (content.includes('#') || content.includes('*') || content.includes('`') || content.includes('\n')) {
         return (
           <div className="max-w-none text-text-secondary">
-            <ReactMarkdown 
+            <ReactMarkdown
               remarkPlugins={[remarkGfm]}
               components={{
                 h1: ({children}) => <h1 className="text-heading-1 mb-4 border-b border-border-secondary pb-2">{children}</h1>,
@@ -93,10 +93,10 @@ export function JsonModal({ isOpen, onClose, content, path, title }: JsonModalPr
                   </blockquote>
                 ),
                 a: ({href, children}) => (
-                  <a 
-                    href={href} 
-                    className="text-accent-secondary hover:text-accent-primary underline decoration-accent-secondary/30 hover:decoration-accent-primary transition-colors" 
-                    target="_blank" 
+                  <a
+                    href={href}
+                    className="text-accent-secondary hover:text-accent-primary underline decoration-accent-secondary/30 hover:decoration-accent-primary transition-colors"
+                    target="_blank"
                     rel="noopener noreferrer"
                   >
                     {children}
@@ -156,7 +156,7 @@ export function JsonModal({ isOpen, onClose, content, path, title }: JsonModalPr
               <DialogTitle className="text-heading-3 text-text-primary mb-2">
                 {title}
               </DialogTitle>
-              
+
               {/* Breadcrumb */}
               <div className="flex items-center gap-1 text-sm text-text-tertiary">
                 <span>Result</span>
@@ -168,7 +168,7 @@ export function JsonModal({ isOpen, onClose, content, path, title }: JsonModalPr
                 ))}
               </div>
             </div>
-            
+
             <div className="flex items-center gap-2 ml-4">
               {/* View Mode Toggle */}
               <SegmentedControl
@@ -178,7 +178,7 @@ export function JsonModal({ isOpen, onClose, content, path, title }: JsonModalPr
                 size="sm"
                 optionClassName="min-w-[110px]"
               />
-              
+
               {/* Actions */}
               <Button
                 variant="outline"
@@ -189,7 +189,7 @@ export function JsonModal({ isOpen, onClose, content, path, title }: JsonModalPr
                 <Copy className="h-3 w-3 mr-1" />
                 Copy
               </Button>
-              
+
               <Button
                 variant="outline"
                 size="sm"
@@ -199,7 +199,7 @@ export function JsonModal({ isOpen, onClose, content, path, title }: JsonModalPr
                 <Download className="h-3 w-3 mr-1" />
                 Download
               </Button>
-              
+
               <Button
                 variant="ghost"
                 size="sm"
@@ -211,11 +211,11 @@ export function JsonModal({ isOpen, onClose, content, path, title }: JsonModalPr
             </div>
           </div>
         </DialogHeader>
-        
+
         <div className="flex-1 overflow-auto p-6 min-h-0">
           {renderContent()}
         </div>
-        
+
         {/* Footer with metadata */}
         <div className="flex-shrink-0 border-t border-border-secondary pt-3 px-6 pb-4">
           <div className="flex items-center justify-between text-xs text-text-tertiary">

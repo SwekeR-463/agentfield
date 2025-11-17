@@ -61,7 +61,7 @@ CREATE INDEX IF NOT EXISTS idx_workflow_executions_workflow_started_at ON workfl
 -- =============================================================================
 -- QUERY PATTERN OPTIMIZATION SUMMARY
 -- =============================================================================
--- 
+--
 -- These indexes are designed to optimize the following common query patterns:
 --
 -- 1. Single execution lookups:

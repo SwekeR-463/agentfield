@@ -62,7 +62,9 @@ def build_citations(results: Sequence[RetrievalResult]) -> List[Citation]:
     citations: List[Citation] = []
     for idx, result in enumerate(results):
         key = alpha_key(idx)
-        path, lines = result.source.split(":") if ":" in result.source else (result.source, "0-0")
+        path, lines = (
+            result.source.split(":") if ":" in result.source else (result.source, "0-0")
+        )
         start_line, end_line = lines.split("-")
 
         citations.append(

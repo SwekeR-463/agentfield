@@ -14,11 +14,11 @@ interface LoadingSkeletonProps {
  * Reusable loading skeleton component for better perceived performance
  * Provides different variants for different UI patterns
  */
-export function LoadingSkeleton({ 
-  className, 
-  variant = 'card', 
+export function LoadingSkeleton({
+  className,
+  variant = 'card',
   count = 1,
-  animated = true 
+  animated = true
 }: LoadingSkeletonProps) {
   const skeletonClass = cn(
     animated && 'animate-pulse',
@@ -112,9 +112,9 @@ export function LoadingSkeleton({
               <div className="space-y-4">
                 <div className="flex justify-between items-end h-32">
                   {Array.from({ length: 7 }).map((_, i) => (
-                    <Skeleton 
-                      key={i} 
-                      className="w-8" 
+                    <Skeleton
+                      key={i}
+                      className="w-8"
                       style={{ height: `${Math.random() * 80 + 20}%` }}
                     />
                   ))}
@@ -178,9 +178,9 @@ export function MCPToolsSkeleton() {
 /**
  * Conditional loading wrapper that shows skeleton while loading
  */
-export function LoadingWrapper({ 
-  loading, 
-  skeleton, 
+export function LoadingWrapper({
+  loading,
+  skeleton,
   children,
   fallback
 }: {
@@ -192,7 +192,7 @@ export function LoadingWrapper({
   if (loading) {
     return skeleton || fallback || <LoadingSkeleton />;
   }
-  
+
   return <>{children}</>;
 }
 
@@ -201,7 +201,7 @@ export function LoadingWrapper({
  */
 export function useLoadingState(initialLoading = false) {
   const [loading, setLoading] = React.useState(initialLoading);
-  
+
   const withLoading = React.useCallback(async <T,>(
     asyncFn: () => Promise<T>,
     showSkeleton = true

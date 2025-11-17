@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { 
-  ChevronDown, 
-  ChevronRight, 
-  Copy, 
+import {
+  ChevronDown,
+  ChevronRight,
+  Copy,
   List,
   Document,
   Maximize
@@ -28,10 +28,10 @@ interface JsonItem {
   isExpandable: boolean;
 }
 
-export function EnhancedJsonViewer({ 
-  data, 
+export function EnhancedJsonViewer({
+  data,
   className = "",
-  maxInlineHeight = 200 
+  maxInlineHeight = 200
 }: EnhancedJsonViewerProps) {
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
   const [modalState, setModalState] = useState<{
@@ -106,10 +106,10 @@ export function EnhancedJsonViewer({
 
     return Object.entries(obj).map(([key, value]) => {
       const path = [...parentPath, key];
-      const type = value === null ? 'null' : 
-                  Array.isArray(value) ? 'array' : 
+      const type = value === null ? 'null' :
+                  Array.isArray(value) ? 'array' :
                   typeof value;
-      
+
       return {
         key,
         value,
@@ -211,7 +211,7 @@ export function EnhancedJsonViewer({
                     )}
                   </Button>
                 </CollapsibleTrigger>
-                
+
                 <div className="flex items-center gap-2 flex-1">
                   <List className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm text-foreground">
@@ -221,7 +221,7 @@ export function EnhancedJsonViewer({
                     {item.value.length} items
                   </Badge>
                 </div>
-                
+
                 <div className="flex items-center gap-1">
                   <Button
                     variant="ghost"
@@ -241,7 +241,7 @@ export function EnhancedJsonViewer({
                   </Button>
                 </div>
               </div>
-              
+
               <CollapsibleContent>
                 <div className="ml-6 mt-2 space-y-2">
                   {item.value.slice(0, 10).map((arrayItem: any, index: number) => (
@@ -301,7 +301,7 @@ export function EnhancedJsonViewer({
                     )}
                   </Button>
                 </CollapsibleTrigger>
-                
+
                 <div className="flex items-center gap-2 flex-1">
                   <Document className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm text-foreground">
@@ -311,7 +311,7 @@ export function EnhancedJsonViewer({
                     {Object.keys(item.value).length} keys
                   </Badge>
                 </div>
-                
+
                 <div className="flex items-center gap-1">
                   <Button
                     variant="ghost"
@@ -331,11 +331,11 @@ export function EnhancedJsonViewer({
                   </Button>
                 </div>
               </div>
-              
+
               <CollapsibleContent>
                 <div className="ml-6 mt-2">
-                  <EnhancedJsonViewer 
-                    data={item.value} 
+                  <EnhancedJsonViewer
+                    data={item.value}
                     maxInlineHeight={maxInlineHeight}
                   />
                 </div>
@@ -393,13 +393,13 @@ export function EnhancedJsonViewer({
                 )}
               </div>
             </div>
-            
+
             {/* Value */}
             <div className="flex-1 min-w-0">
               {renderValue(item)}
             </div>
           </div>
-          
+
           {/* Separator */}
           {index < items.length - 1 && (
             <div className="border-b border-border/50" />

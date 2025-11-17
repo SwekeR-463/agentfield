@@ -264,18 +264,18 @@ export class LayoutManager {
   private applyDagreLayout(nodes: Node[], edges: Edge[], layoutType: DagreLayoutType): { nodes: Node[]; edges: Edge[] } {
     const g = new dagre.graphlib.Graph();
     g.setDefaultEdgeLabel(() => ({}));
-    
+
     // Calculate average node width for better spacing
     const nodeDimensions = nodes.map(node => this.calculateNodeDimensions(node.data));
     const avgWidth = nodeDimensions.reduce((sum, dim) => sum + dim.width, 0) / nodeDimensions.length;
     const maxWidth = Math.max(...nodeDimensions.map(dim => dim.width));
-    
+
     // Configure layout with dynamic spacing based on actual node sizes
     const direction = layoutType === 'tree' ? 'TB' : 'LR';
     const spacing = direction === 'TB'
       ? { rankSep: 140, nodeSep: Math.max(100, avgWidth * 0.4) }  // Tree layout: top-to-bottom
       : { rankSep: Math.max(280, maxWidth * 1.2), nodeSep: 120 }; // Flow layout: left-to-right
-    
+
     g.setGraph({
       rankdir: direction,
       ranksep: spacing.rankSep,
@@ -323,11 +323,11 @@ export class LayoutManager {
   private calculateNodeDimensions(nodeData: any): { width: number; height: number } {
     const taskText = nodeData.task_name || nodeData.reasoner_id || '';
     const agentText = nodeData.agent_name || nodeData.agent_node_id || '';
-    
+
     const minWidth = 200;
     const maxWidth = 360;
     const charWidth = 7.5;
-    
+
     const humanizeText = (text: string): string => {
       return text
         .replace(/_/g, ' ')
@@ -336,23 +336,23 @@ export class LayoutManager {
         .replace(/\s+/g, ' ')
         .trim();
     };
-    
+
     const taskHuman = humanizeText(taskText);
     const agentHuman = humanizeText(agentText);
-    
+
     const taskWordsLength = taskHuman.split(' ').reduce((max, word) => Math.max(max, word.length), 0);
     const agentWordsLength = agentHuman.split(' ').reduce((max, word) => Math.max(max, word.length), 0);
-    
+
     const longestWord = Math.max(taskWordsLength, agentWordsLength);
     const estimatedWidth = Math.max(
       longestWord * charWidth * 1.8,
       (taskHuman.length / 2.2) * charWidth,
       (agentHuman.length / 2.2) * charWidth
     ) + 80;
-    
+
     const width = Math.min(maxWidth, Math.max(minWidth, estimatedWidth));
     const height = 100; // Fixed height as set in WorkflowNode
-    
+
     return { width, height };
   }
 

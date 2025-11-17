@@ -152,8 +152,8 @@ export const ConfigurationWizard: React.FC<ConfigurationWizardProps> = ({
                   <div key={field.name} className="flex justify-between items-center py-2 border-b border-gray-100">
                     <span className="text-sm font-medium">{field.name}</span>
                     <span className="text-sm text-gray-600">
-                      {field.type === 'secret' 
-                        ? '••••••••' 
+                      {field.type === 'secret'
+                        ? '••••••••'
                         : field.type === 'boolean'
                         ? (configuration[field.name] ? 'Enabled' : 'Disabled')
                         : configuration[field.name] || 'Not set'
@@ -180,14 +180,14 @@ export const ConfigurationWizard: React.FC<ConfigurationWizardProps> = ({
             const Icon = step.icon;
             const isActive = index === currentStep;
             const isCompleted = index < currentStep;
-            
+
             return (
               <div key={index} className="flex items-center">
                 <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${
-                  isCompleted 
-                    ? 'bg-green-500 border-green-500 text-white' 
-                    : isActive 
-                    ? 'bg-blue-500 border-blue-500 text-white' 
+                  isCompleted
+                    ? 'bg-green-500 border-green-500 text-white'
+                    : isActive
+                    ? 'bg-blue-500 border-blue-500 text-white'
                     : 'bg-gray-100 border-gray-300 text-gray-400'
                 }`}>
                   {isCompleted ? (

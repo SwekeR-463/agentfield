@@ -84,39 +84,137 @@ def load_template(path: Optional[Path]) -> Optional[str]:
     try:
         json.loads(text.format(seq=0, depth=0, width=0, payload=""))
     except Exception as exc:  # pylint: disable=broad-except
-        raise SystemExit(f"Template at {path} is not valid JSON after formatting: {exc}") from exc
+        raise SystemExit(
+            f"Template at {path} is not valid JSON after formatting: {exc}"
+        ) from exc
     return text
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="AgentField durable execution load tester")
-    parser.add_argument("--base-url", default=os.getenv("AGENTFIELD_BASE_URL", "http://localhost:8080"))
+    parser = argparse.ArgumentParser(
+        description="AgentField durable execution load tester"
+    )
+    parser.add_argument(
+        "--base-url", default=os.getenv("AGENTFIELD_BASE_URL", "http://localhost:8080")
+    )
     parser.add_argument("--target", required=True, help="Target in node.reasoner form")
     parser.add_argument("--mode", choices=["sync", "async"], default="sync")
     parser.add_argument("--requests", type=int, default=100)
     parser.add_argument("--concurrency", type=int, default=8)
-    parser.add_argument("--payload-bytes", type=int, default=1024, help="Size of filler payload inside input.payload")
-    parser.add_argument("--depth", type=int, default=0, help="Hint for nested reasoners (added to payload)")
-    parser.add_argument("--width", type=int, default=0, help="Hint for nested reasoners (added to payload)")
-    parser.add_argument("--body-template", type=Path, help="Path to JSON template for request body")
-    parser.add_argument("--header", dest="headers", action="append", help="Extra header KEY:VALUE", default=[])
-    parser.add_argument("--request-timeout", type=float, default=60.0, help="Per HTTP request timeout in seconds")
-    parser.add_argument("--execution-timeout", type=float, default=600.0, help="Max time to wait for async completion")
-    parser.add_argument("--poll-interval", type=float, default=0.25, help="Initial poll interval for async mode")
-    parser.add_argument("--max-poll-interval", type=float, default=5.0, help="Max poll interval for async mode")
-    parser.add_argument("--backoff-multiplier", type=float, default=1.7, help="Exponential backoff multiplier")
-    parser.add_argument("--jitter", type=float, default=0.2, help="Random jitter applied to poll sleeps (0-1)")
-    parser.add_argument("--save-metrics", type=Path, help="Optional path to dump metrics JSON")
-    parser.add_argument("--print-failures", action="store_true", help="Log failing responses for inspection")
-    parser.add_argument("--async-status-endpoint", default="/api/v1/executions", help="Status endpoint base path")
-    parser.add_argument("--async-submit-prefix", default="/api/v1/execute/async", help="Async submission prefix")
-    parser.add_argument("--sync-prefix", default="/api/v1/execute", help="Sync submission prefix")
-    parser.add_argument("--verify-ssl", action="store_true", help="Verify TLS certificates (default off)")
+    parser.add_argument(
+        "--payload-bytes",
+        type=int,
+        default=1024,
+        help="Size of filler payload inside input.payload",
+    )
+    parser.add_argument(
+        "--depth",
+        type=int,
+        default=0,
+        help="Hint for nested reasoners (added to payload)",
+    )
+    parser.add_argument(
+        "--width",
+        type=int,
+        default=0,
+        help="Hint for nested reasoners (added to payload)",
+    )
+    parser.add_argument(
+        "--body-template", type=Path, help="Path to JSON template for request body"
+    )
+    parser.add_argument(
+        "--header",
+        dest="headers",
+        action="append",
+        help="Extra header KEY:VALUE",
+        default=[],
+    )
+    parser.add_argument(
+        "--request-timeout",
+        type=float,
+        default=60.0,
+        help="Per HTTP request timeout in seconds",
+    )
+    parser.add_argument(
+        "--execution-timeout",
+        type=float,
+        default=600.0,
+        help="Max time to wait for async completion",
+    )
+    parser.add_argument(
+        "--poll-interval",
+        type=float,
+        default=0.25,
+        help="Initial poll interval for async mode",
+    )
+    parser.add_argument(
+        "--max-poll-interval",
+        type=float,
+        default=5.0,
+        help="Max poll interval for async mode",
+    )
+    parser.add_argument(
+        "--backoff-multiplier",
+        type=float,
+        default=1.7,
+        help="Exponential backoff multiplier",
+    )
+    parser.add_argument(
+        "--jitter",
+        type=float,
+        default=0.2,
+        help="Random jitter applied to poll sleeps (0-1)",
+    )
+    parser.add_argument(
+        "--save-metrics", type=Path, help="Optional path to dump metrics JSON"
+    )
+    parser.add_argument(
+        "--print-failures",
+        action="store_true",
+        help="Log failing responses for inspection",
+    )
+    parser.add_argument(
+        "--async-status-endpoint",
+        default="/api/v1/executions",
+        help="Status endpoint base path",
+    )
+    parser.add_argument(
+        "--async-submit-prefix",
+        default="/api/v1/execute/async",
+        help="Async submission prefix",
+    )
+    parser.add_argument(
+        "--sync-prefix", default="/api/v1/execute", help="Sync submission prefix"
+    )
+    parser.add_argument(
+        "--verify-ssl",
+        action="store_true",
+        help="Verify TLS certificates (default off)",
+    )
     parser.add_argument("--seed", type=int, help="Random seed for reproducibility")
-    parser.add_argument("--scenario-file", type=Path, help="JSON file describing one or more load scenarios")
-    parser.add_argument("--metrics-url", type=str, help="Prometheus metrics endpoint to sample before/after runs")
-    parser.add_argument("--metrics", dest="metrics", action="append", default=[], help="Prometheus metric names to capture")
-    parser.add_argument("--metrics-timeout", type=float, default=5.0, help="Timeout (seconds) for metrics scraping")
+    parser.add_argument(
+        "--scenario-file",
+        type=Path,
+        help="JSON file describing one or more load scenarios",
+    )
+    parser.add_argument(
+        "--metrics-url",
+        type=str,
+        help="Prometheus metrics endpoint to sample before/after runs",
+    )
+    parser.add_argument(
+        "--metrics",
+        dest="metrics",
+        action="append",
+        default=[],
+        help="Prometheus metric names to capture",
+    )
+    parser.add_argument(
+        "--metrics-timeout",
+        type=float,
+        default=5.0,
+        help="Timeout (seconds) for metrics scraping",
+    )
     return parser
 
 
@@ -129,7 +227,14 @@ class Metrics:
         self.exceptions: Counter[str] = Counter()
         self.total = 0
 
-    def record(self, *, latency: Optional[float], status: Optional[str], http_code: Optional[int], exc: Optional[BaseException]) -> None:
+    def record(
+        self,
+        *,
+        latency: Optional[float],
+        status: Optional[str],
+        http_code: Optional[int],
+        exc: Optional[BaseException],
+    ) -> None:
         self.total += 1
         if latency is not None and math.isfinite(latency):
             self.latencies.append(latency)
@@ -153,7 +258,9 @@ class Metrics:
             "elapsed_sec": elapsed,
             "throughput_rps": self.total / elapsed if elapsed else 0,
             "latency_ms_avg": statistics.mean(latencies) * 1000 if latencies else 0,
-            "latency_ms_stddev": statistics.pstdev(latencies) * 1000 if len(latencies) > 1 else 0,
+            "latency_ms_stddev": statistics.pstdev(latencies) * 1000
+            if len(latencies) > 1
+            else 0,
             "latency_ms_min": min(latencies) * 1000 if latencies else 0,
             "latency_ms_max": max(latencies) * 1000 if latencies else 0,
             "latency_ms_percentiles": {k: v * 1000 for k, v in percentiles.items()},
@@ -165,10 +272,14 @@ class Metrics:
 
 
 def build_payload_factory(args: argparse.Namespace, template: Optional[str]):
-    payload_seed = os.urandom(max(args.payload_bytes, 1)).hex() if args.payload_bytes > 0 else ""
+    payload_seed = (
+        os.urandom(max(args.payload_bytes, 1)).hex() if args.payload_bytes > 0 else ""
+    )
 
     def default_body(seq: int) -> Dict[str, Any]:
-        filler = (payload_seed * ((args.payload_bytes // len(payload_seed)) + 1))[: args.payload_bytes]
+        filler = (payload_seed * ((args.payload_bytes // len(payload_seed)) + 1))[
+            : args.payload_bytes
+        ]
         body: Dict[str, Any] = {
             "input": {
                 "sequence": seq,
@@ -185,8 +296,14 @@ def build_payload_factory(args: argparse.Namespace, template: Optional[str]):
         return default_body
 
     def from_template(seq: int) -> Dict[str, Any]:
-        filler = os.urandom(max(args.payload_bytes, 1)).hex()[: args.payload_bytes] if args.payload_bytes else ""
-        formatted = template.format(seq=seq, depth=args.depth, width=args.width, payload=filler)
+        filler = (
+            os.urandom(max(args.payload_bytes, 1)).hex()[: args.payload_bytes]
+            if args.payload_bytes
+            else ""
+        )
+        formatted = template.format(
+            seq=seq, depth=args.depth, width=args.width, payload=filler
+        )
         return json.loads(formatted)
 
     return from_template
@@ -221,7 +338,9 @@ def load_scenarios(args: argparse.Namespace) -> List[Tuple[str, Dict[str, Any]]]
     return scenarios
 
 
-async def scrape_metrics(url: Optional[str], keys: Iterable[str], timeout: float, verify_ssl: bool) -> Optional[Dict[str, Optional[float]]]:
+async def scrape_metrics(
+    url: Optional[str], keys: Iterable[str], timeout: float, verify_ssl: bool
+) -> Optional[Dict[str, Optional[float]]]:
     if not url:
         return None
 
@@ -262,7 +381,9 @@ async def wait_for_async_completion(
 
     while True:
         if time.perf_counter() > deadline:
-            raise asyncio.TimeoutError(f"execution {execution_id} exceeded timeout {args.execution_timeout}s")
+            raise asyncio.TimeoutError(
+                f"execution {execution_id} exceeded timeout {args.execution_timeout}s"
+            )
 
         response = await client.get(endpoint, headers=headers)
         try:
@@ -276,8 +397,12 @@ async def wait_for_async_completion(
         else:
             status = None
 
-        await asyncio.sleep(poll_interval * (1 + random.uniform(-args.jitter, args.jitter)))
-        poll_interval = min(poll_interval * args.backoff_multiplier, args.max_poll_interval)
+        await asyncio.sleep(
+            poll_interval * (1 + random.uniform(-args.jitter, args.jitter))
+        )
+        poll_interval = min(
+            poll_interval * args.backoff_multiplier, args.max_poll_interval
+        )
 
 
 async def invoke_request(
@@ -302,7 +427,7 @@ async def invoke_request(
         try:
             response = await client.post(url, json=body, headers=headers)
             http_code = response.status_code
-            if args.mode == 'sync':
+            if args.mode == "sync":
                 payload_snapshot = response.json()
                 final_status = str(payload_snapshot.get("status", "")).lower()
             else:
@@ -316,7 +441,11 @@ async def invoke_request(
                         final_status = "missing_execution_id"
                         payload_snapshot = submission
                     else:
-                        final_status, payload_snapshot, poll_code = await wait_for_async_completion(
+                        (
+                            final_status,
+                            payload_snapshot,
+                            poll_code,
+                        ) = await wait_for_async_completion(
                             client, exec_id, headers, args
                         )
                         if poll_code is not None:
@@ -327,14 +456,18 @@ async def invoke_request(
             payload_snapshot = {"error": str(err)}
 
         latency = time.perf_counter() - start
-        metrics.record(latency=latency, status=final_status, http_code=http_code, exc=exc)
+        metrics.record(
+            latency=latency, status=final_status, http_code=http_code, exc=exc
+        )
         if final_status and final_status not in SUCCESS_STATUSES:
-            failures.append({
-                "sequence": seq,
-                "status": final_status,
-                "http_status": http_code,
-                "response": payload_snapshot,
-            })
+            failures.append(
+                {
+                    "sequence": seq,
+                    "status": final_status,
+                    "http_status": http_code,
+                    "response": payload_snapshot,
+                }
+            )
 
 
 def safe_json(response: httpx.Response) -> Dict[str, Any]:
@@ -345,24 +478,45 @@ def safe_json(response: httpx.Response) -> Dict[str, Any]:
 
 
 async def run_load(args: argparse.Namespace) -> Dict[str, Any]:
-    headers = {key: value for key, value in (parse_header(h) for h in args.headers)} if args.headers else {}
+    headers = (
+        {key: value for key, value in (parse_header(h) for h in args.headers)}
+        if args.headers
+        else {}
+    )
     payload_factory = build_payload_factory(args, load_template(args.body_template))
     metrics = Metrics()
     semaphore = asyncio.Semaphore(args.concurrency)
     failures: List[Dict[str, Any]] = []
 
-    limits = httpx.Limits(max_connections=args.concurrency * 4, max_keepalive_connections=args.concurrency)
+    limits = httpx.Limits(
+        max_connections=args.concurrency * 4, max_keepalive_connections=args.concurrency
+    )
     metric_keys = args.metrics or DEFAULT_METRIC_KEYS
-    pre_metrics = await scrape_metrics(args.metrics_url, metric_keys, args.metrics_timeout, args.verify_ssl)
+    pre_metrics = await scrape_metrics(
+        args.metrics_url, metric_keys, args.metrics_timeout, args.verify_ssl
+    )
 
-    async with httpx.AsyncClient(timeout=args.request_timeout, limits=limits, verify=args.verify_ssl) as client:
+    async with httpx.AsyncClient(
+        timeout=args.request_timeout, limits=limits, verify=args.verify_ssl
+    ) as client:
         tasks = [
-            invoke_request(seq, client, headers, payload_factory, metrics, args, semaphore, failures)
+            invoke_request(
+                seq,
+                client,
+                headers,
+                payload_factory,
+                metrics,
+                args,
+                semaphore,
+                failures,
+            )
             for seq in range(args.requests)
         ]
         await asyncio.gather(*tasks)
 
-    post_metrics = await scrape_metrics(args.metrics_url, metric_keys, args.metrics_timeout, args.verify_ssl)
+    post_metrics = await scrape_metrics(
+        args.metrics_url, metric_keys, args.metrics_timeout, args.verify_ssl
+    )
 
     summary = metrics.summary()
     summary["timestamp"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
@@ -398,7 +552,8 @@ async def run_load(args: argparse.Namespace) -> Dict[str, Any]:
             "delta": {
                 key: (
                     None
-                    if not isinstance(pre_metrics, dict) or not isinstance(post_metrics, dict)
+                    if not isinstance(pre_metrics, dict)
+                    or not isinstance(post_metrics, dict)
                     else None
                     if pre_metrics.get(key) is None or post_metrics.get(key) is None
                     else post_metrics.get(key) - pre_metrics.get(key)
@@ -407,8 +562,12 @@ async def run_load(args: argparse.Namespace) -> Dict[str, Any]:
             },
         }
 
-    if summary["status_counts"].get("exception") == args.requests and summary["exceptions"].get("ConnectError"):
-        summary["note"] = "All requests failed with connection errors. Verify the gateway is reachable at the specified base URL."
+    if summary["status_counts"].get("exception") == args.requests and summary[
+        "exceptions"
+    ].get("ConnectError"):
+        summary["note"] = (
+            "All requests failed with connection errors. Verify the gateway is reachable at the specified base URL."
+        )
 
     return summary
 
@@ -449,7 +608,9 @@ def main() -> None:
         args.save_metrics.write_text(json.dumps(output, indent=2, default=str))
         print(f"Metrics written to {args.save_metrics}")
 
-    failed = any(res["status_counts"].get("exception") or res["exceptions"] for res in results)
+    failed = any(
+        res["status_counts"].get("exception") or res["exceptions"] for res in results
+    )
 
     if failed:
         sys.exit(2)

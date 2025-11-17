@@ -81,17 +81,17 @@ function formatTimestamp(timestamp: string): string {
 
 function getCompactNotesPreview(notes: ExecutionNote[]): string {
   if (notes.length === 0) return "";
-  
+
   const firstNote = notes[0];
   const preview = firstNote.message.replace(/\n/g, " ").trim();
   // Much shorter preview for compact display
   const truncatedPreview = preview.length > 40 ? preview.substring(0, 40) + "..." : preview;
-  
+
   // If there are multiple notes, indicate this
   if (notes.length > 1) {
     return `${truncatedPreview} (+${notes.length - 1})`;
   }
-  
+
   return truncatedPreview;
 }
 
@@ -176,26 +176,26 @@ export function TimelineNodeCard({
           <div className="flex-shrink-0">
             {getStatusDot(node.status)}
           </div>
-          
+
           {/* Reasoner Name */}
           <span className={`font-medium truncate ${hasNotes ? 'text-text-primary' : 'text-text-secondary'}`}>
             {reasonerName}
           </span>
-          
+
           <span className="text-text-tertiary">•</span>
-          
+
           {/* Agent Name */}
           <span className="text-text-tertiary truncate text-xs">
             {agentName}
           </span>
         </div>
-        
+
         {/* Right: Time + Expand Button */}
         <div className="flex items-center gap-2 flex-shrink-0">
           <span className="text-xs text-text-tertiary">
             {formatTimestamp(node.started_at)}
           </span>
-          
+
           {hasNotes && (
             <Button
               variant="ghost"
@@ -220,12 +220,12 @@ export function TimelineNodeCard({
             {/* Offset to align with content above */}
             <div className="w-2 flex-shrink-0"></div>
             <div className="w-3 flex-shrink-0"></div>
-            
+
             {/* Compact preview text */}
             <span className="text-text-quaternary truncate flex-1 leading-relaxed">
               {compactPreview}
             </span>
-            
+
             {/* Compact tags */}
             {compactTags.length > 0 && (
               <div className="flex items-center gap-1 flex-shrink-0">
@@ -233,7 +233,7 @@ export function TimelineNodeCard({
                   const tagColor = getTagColor(tag);
                   const textColorMatch = tagColor.match(/text-([^\s]+)/);
                   const textColorClass = textColorMatch ? textColorMatch[0] : 'text-text-secondary';
-                  
+
                   return (
                     <button
                       key={`${tag}-${index}`}
@@ -324,7 +324,7 @@ export function TimelineNodeCard({
                       // Extract text color from the tag color classes
                       const textColorMatch = tagColor.match(/text-([^\s]+)/);
                       const textColorClass = textColorMatch ? textColorMatch[0] : 'text-text-secondary';
-                      
+
                       return (
                         <button
                           key={`${tag}-${tagIndex}`}
@@ -367,13 +367,13 @@ export function TimelineNodeCardSkeleton({
         <div className="flex items-center gap-3 min-w-0 flex-1">
           {/* Status dot skeleton */}
           <Skeleton className="h-2 w-2 rounded-full flex-shrink-0" />
-          
+
           {/* Reasoner name skeleton */}
           <Skeleton className="h-4 w-20" />
-          
+
           {/* Separator */}
           <Skeleton className="h-1 w-1 rounded-full" />
-          
+
           {/* Agent name skeleton */}
           <Skeleton className="h-3 w-16" />
         </div>

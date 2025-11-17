@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { 
-  ChevronDown, 
-  ChevronRight, 
-  Copy, 
+import {
+  ChevronDown,
+  ChevronRight,
+  Copy,
   Code,
   Document,
   Maximize,
@@ -23,25 +23,25 @@ interface SmartStringRendererProps {
   className?: string;
 }
 
-export function SmartStringRenderer({ 
-  content, 
+export function SmartStringRenderer({
+  content,
   onOpenModal,
   maxInlineHeight = 200,
   className = ""
 }: SmartStringRendererProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  
+
   const handleCopy = () => {
     navigator.clipboard.writeText(content);
   };
 
   // Content type detection
-  const isMarkdown = content.includes('#') || content.includes('*') || content.includes('`') || 
+  const isMarkdown = content.includes('#') || content.includes('*') || content.includes('`') ||
                     content.includes('[') && content.includes('](') || content.includes('```');
   const isLongText = content.length > 150;
   const hasMultipleLines = content.includes('\n');
   const isUrl = /^https?:\/\//.test(content.trim());
-  const isCode = content.includes('{') && content.includes('}') || 
+  const isCode = content.includes('{') && content.includes('}') ||
                 content.includes('function') || content.includes('const ') ||
                 content.includes('import ') || content.includes('export ');
 
@@ -56,9 +56,9 @@ export function SmartStringRenderer({
       <div className={`flex items-center gap-2 ${className}`}>
         <Launch className="h-4 w-4 text-text-tertiary flex-shrink-0" />
         <div className="flex-1 min-w-0">
-          <a 
-            href={content} 
-            target="_blank" 
+          <a
+            href={content}
+            target="_blank"
             rel="noopener noreferrer"
             className="text-accent-secondary hover:text-accent-primary underline decoration-accent-secondary/30 hover:decoration-accent-primary transition-colors text-sm truncate block"
             title={content}
@@ -97,7 +97,7 @@ export function SmartStringRenderer({
                 )}
               </Button>
             </CollapsibleTrigger>
-            
+
             <div className="flex-1 min-w-0">
               {/* Preview */}
               <div className="flex items-start gap-2">
@@ -127,7 +127,7 @@ export function SmartStringRenderer({
                     )}
                   </div>
                 </div>
-                
+
                 <div className="flex items-center gap-1 flex-shrink-0">
                   <Button
                     variant="ghost"
@@ -149,17 +149,17 @@ export function SmartStringRenderer({
                   )}
                 </div>
               </div>
-              
+
               {/* Expanded content */}
               <CollapsibleContent>
-                <div 
+                <div
                   className="mt-3 border border-border-secondary rounded-lg bg-bg-secondary/30 overflow-hidden"
                   style={{ maxHeight: maxInlineHeight }}
                 >
                   <div className="p-4 overflow-auto">
                     {isMarkdown ? (
                       <div className="prose prose-sm max-w-none prose-invert prose-headings:text-text-primary prose-p:text-text-secondary prose-strong:text-text-primary prose-code:text-text-primary prose-code:bg-bg-secondary prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:bg-bg-secondary prose-pre:border prose-pre:border-border-secondary">
-                        <ReactMarkdown 
+                        <ReactMarkdown
                           remarkPlugins={[remarkGfm]}
                           components={{
                             h1: ({children}) => <h1 className="text-heading-2 mb-3 text-text-primary">{children}</h1>,
@@ -190,10 +190,10 @@ export function SmartStringRenderer({
                               </blockquote>
                             ),
                             a: ({href, children}) => (
-                              <a 
-                                href={href} 
-                                className="text-accent-secondary hover:text-accent-primary underline decoration-accent-secondary/30 hover:decoration-accent-primary transition-colors" 
-                                target="_blank" 
+                              <a
+                                href={href}
+                                className="text-accent-secondary hover:text-accent-primary underline decoration-accent-secondary/30 hover:decoration-accent-primary transition-colors"
+                                target="_blank"
                                 rel="noopener noreferrer"
                               >
                                 {children}
@@ -244,7 +244,7 @@ export function SmartStringRenderer({
       <div className="flex-1 min-w-0">
         {isMarkdown ? (
           <div className="prose prose-sm max-w-none prose-invert prose-p:text-text-secondary prose-p:mb-0 prose-strong:text-text-primary prose-code:text-text-primary prose-code:bg-bg-secondary prose-code:px-1 prose-code:py-0.5 prose-code:rounded">
-            <ReactMarkdown 
+            <ReactMarkdown
               remarkPlugins={[remarkGfm]}
               components={{
                 p: ({children}) => <span className="text-body">{children}</span>,
@@ -266,7 +266,7 @@ export function SmartStringRenderer({
           </span>
         )}
       </div>
-      
+
       <div className="flex items-center gap-1 flex-shrink-0">
         <Button
           variant="ghost"

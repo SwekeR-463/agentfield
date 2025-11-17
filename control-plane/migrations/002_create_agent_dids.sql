@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS agent_dids (
     registered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    
+
     -- Foreign key constraints
     FOREIGN KEY (organization_id) REFERENCES did_registry(organization_id) ON DELETE CASCADE
 );

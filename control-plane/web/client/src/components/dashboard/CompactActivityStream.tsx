@@ -207,7 +207,7 @@ export function CompactActivityStream({ className }: CompactActivityStreamProps)
 
       {/* Error banner (if error but we have cached data) */}
       {hasError && compactExecutions.length > 0 && (
-        <div 
+        <div
           className="flex items-center justify-between p-2 mb-3 rounded border"
           style={{
             backgroundColor: "var(--status-warning-bg)",

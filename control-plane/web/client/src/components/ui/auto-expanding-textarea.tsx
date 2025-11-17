@@ -27,14 +27,14 @@ const AutoExpandingTextarea = React.forwardRef<HTMLTextAreaElement, AutoExpandin
 
       // Reset height to auto to get the correct scrollHeight
       textarea.style.height = 'auto';
-      
+
       // Calculate the new height
       const scrollHeight = textarea.scrollHeight;
       const newHeight = Math.min(scrollHeight, maxHeight);
-      
+
       // Set the new height
       textarea.style.height = `${newHeight}px`;
-      
+
       // Enable/disable scrolling based on content
       textarea.style.overflowY = scrollHeight > maxHeight ? 'auto' : 'hidden';
     }, [maxHeight]);

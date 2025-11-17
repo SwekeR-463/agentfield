@@ -19,12 +19,12 @@ export function PerformanceChart({ metrics }: PerformanceChartProps) {
     const time = t.avg_response_time;
     return typeof time === 'number' && !isNaN(time) ? time : 0;
   }) || [];
-  
+
   const successRates = metrics.performance_trend?.map(t => {
     const rate = t.success_rate;
     return typeof rate === 'number' && !isNaN(rate) ? rate : 0;
   }) || [];
-  
+
   const executionCounts = metrics.performance_trend?.map(t => {
     const count = t.execution_count;
     return typeof count === 'number' && !isNaN(count) ? count : 0;
@@ -33,7 +33,7 @@ export function PerformanceChart({ metrics }: PerformanceChartProps) {
   // Calculate safe max values, ensuring no NaN results
   const maxResponseTime = responseTimes.length > 0 ? Math.max(...responseTimes, 100) : 100;
   const maxExecutions = executionCounts.length > 0 ? Math.max(...executionCounts, 1) : 1;
-  
+
   // Final validation to ensure no NaN values
   const safeMaxResponseTime = isNaN(maxResponseTime) ? 100 : maxResponseTime;
   const safeMaxExecutions = isNaN(maxExecutions) ? 1 : maxExecutions;

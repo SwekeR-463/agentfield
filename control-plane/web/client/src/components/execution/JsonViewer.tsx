@@ -86,7 +86,7 @@ function JsonNode({ data, keyName, level, collapsed, isLast = false }: JsonNodeP
     );
   }
 
-  const entries = Array.isArray(data) 
+  const entries = Array.isArray(data)
     ? data.map((item, index) => [index.toString(), item])
     : Object.entries(data);
 

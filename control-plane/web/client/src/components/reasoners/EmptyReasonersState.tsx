@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 import {
-  Wifi, 
-  WifiOff, 
-  Grid, 
+  Wifi,
+  WifiOff,
+  Grid,
   Terminal,
   Renew,
   Search,
@@ -50,14 +50,14 @@ interface EmptyStateConfig {
   tip?: EmptyStateTip;
 }
 
-export function EmptyReasonersState({ 
-  type, 
+export function EmptyReasonersState({
+  type,
   searchTerm,
   onRefresh,
   onClearFilters,
   onShowAll,
   loading = false,
-  className 
+  className
 }: EmptyReasonersStateProps) {
   const getStateConfig = (): EmptyStateConfig => {
     switch (type) {
@@ -74,7 +74,7 @@ export function EmptyReasonersState({
             body: "Launch an agent node to register reasoners with AgentField. They will appear here as soon as they are online.",
           },
         };
-      
+
       case 'no-online':
         return {
           icon: <Wifi className="h-10 w-10" />,
@@ -88,7 +88,7 @@ export function EmptyReasonersState({
             body: "Verify that your agent nodes are connected and healthy. Offline reasoners usually indicate network or configuration issues.",
           },
         };
-      
+
       case 'no-offline':
         return {
           icon: <WifiOff className="h-10 w-10" />,
@@ -97,18 +97,18 @@ export function EmptyReasonersState({
           primaryAction: { label: "Show Online Reasoners", action: onShowAll, icon: <Wifi className="h-4 w-4" /> },
           secondaryAction: { label: "Refresh", action: onRefresh, icon: <Renew className={cn("h-4 w-4", loading && "animate-spin")} /> }
         };
-      
+
       case 'no-search-results':
         return {
           icon: <Search className="h-10 w-10" />,
           title: "No Results Found",
-          description: searchTerm 
+          description: searchTerm
             ? `No reasoners match "${searchTerm}". Try a different search term or clear your filters.`
             : "No reasoners match your current filters. Try adjusting your search criteria.",
           primaryAction: { label: "Clear Filters", action: onClearFilters, icon: <Grid className="h-4 w-4" /> },
           secondaryAction: { label: "Refresh", action: onRefresh, icon: <Renew className={cn("h-4 w-4", loading && "animate-spin")} /> }
         };
-      
+
       default:
         return {
           icon: <CloudOffline className="h-10 w-10" />,

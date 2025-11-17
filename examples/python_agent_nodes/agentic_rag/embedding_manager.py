@@ -2,6 +2,7 @@
 Embedding Manager - FastEmbed wrapper for lazy, efficient embeddings
 Handles embedding generation, caching, and similarity computation
 """
+
 from typing import List, Optional
 import numpy as np
 from fastembed import TextEmbedding
@@ -79,8 +80,7 @@ class EmbeddingManager:
 
     @staticmethod
     def batch_cosine_similarity(
-        query_vec: np.ndarray,
-        doc_vecs: List[np.ndarray]
+        query_vec: np.ndarray, doc_vecs: List[np.ndarray]
     ) -> List[float]:
         """
         Compute cosine similarity between query and multiple documents

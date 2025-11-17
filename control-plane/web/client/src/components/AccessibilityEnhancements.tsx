@@ -4,15 +4,15 @@ import { cn } from '@/lib/utils';
 /**
  * Screen reader only text component
  */
-export function ScreenReaderOnly({ 
-  children, 
-  className 
-}: { 
+export function ScreenReaderOnly({
+  children,
+  className
+}: {
   children: React.ReactNode;
   className?: string;
 }) {
   return (
-    <span 
+    <span
       className={cn(
         'sr-only absolute left-[-10000px] top-auto w-[1px] h-[1px] overflow-hidden',
         className
@@ -26,10 +26,10 @@ export function ScreenReaderOnly({
 /**
  * Skip link component for keyboard navigation
  */
-export function SkipLink({ 
-  href, 
-  children 
-}: { 
+export function SkipLink({
+  href,
+  children
+}: {
   href: string;
   children: React.ReactNode;
 }) {
@@ -46,11 +46,11 @@ export function SkipLink({
 /**
  * Live region for announcing dynamic content changes
  */
-export function LiveRegion({ 
-  children, 
+export function LiveRegion({
+  children,
   politeness = 'polite',
   atomic = false,
-  className 
+  className
 }: {
   children: React.ReactNode;
   politeness?: 'off' | 'polite' | 'assertive';
@@ -71,10 +71,10 @@ export function LiveRegion({
 /**
  * Focus trap component for modal dialogs
  */
-export function FocusTrap({ 
-  children, 
+export function FocusTrap({
+  children,
   active = true,
-  restoreFocus = true 
+  restoreFocus = true
 }: {
   children: React.ReactNode;
   active?: boolean;
@@ -131,7 +131,7 @@ export function FocusTrap({
 
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
-      
+
       // Restore focus to the previously active element
       if (restoreFocus && previousActiveElement.current) {
         (previousActiveElement.current as HTMLElement).focus?.();
@@ -153,7 +153,7 @@ export function FocusTrap({
 /**
  * Keyboard navigation helper component
  */
-export function KeyboardNavigable({ 
+export function KeyboardNavigable({
   children,
   onEnter,
   onSpace,
@@ -208,7 +208,7 @@ export function KeyboardNavigable({
   };
 
   return (
-    <div 
+    <div
       onKeyDown={handleKeyDown}
       className={className}
       tabIndex={0}
@@ -221,10 +221,10 @@ export function KeyboardNavigable({
 /**
  * Status announcer for dynamic status changes
  */
-export function StatusAnnouncer({ 
-  status, 
-  delay = 1000 
-}: { 
+export function StatusAnnouncer({
+  status,
+  delay = 1000
+}: {
   status: string;
   delay?: number;
 }) {
@@ -248,11 +248,11 @@ export function StatusAnnouncer({
 /**
  * Progress announcer for long-running operations
  */
-export function ProgressAnnouncer({ 
-  progress, 
-  total, 
+export function ProgressAnnouncer({
+  progress,
+  total,
   label,
-  announceInterval = 25 
+  announceInterval = 25
 }: {
   progress: number;
   total: number;
@@ -282,10 +282,10 @@ export function ProgressAnnouncer({
 /**
  * Error announcer for form validation and errors
  */
-export function ErrorAnnouncer({ 
-  error, 
-  clearAfter = 5000 
-}: { 
+export function ErrorAnnouncer({
+  error,
+  clearAfter = 5000
+}: {
   error: string | null;
   clearAfter?: number;
 }) {
@@ -294,12 +294,12 @@ export function ErrorAnnouncer({
   useEffect(() => {
     if (error) {
       setCurrentError(error);
-      
+
       if (clearAfter > 0) {
         const timer = setTimeout(() => {
           setCurrentError(null);
         }, clearAfter);
-        
+
         return () => clearTimeout(timer);
       }
     }
@@ -337,9 +337,9 @@ export function useAccessibility() {
     liveRegion.setAttribute('aria-atomic', 'true');
     liveRegion.className = 'sr-only';
     liveRegion.textContent = message;
-    
+
     document.body.appendChild(liveRegion);
-    
+
     // Remove after announcement
     setTimeout(() => {
       document.body.removeChild(liveRegion);
@@ -352,9 +352,9 @@ export function useAccessibility() {
     liveRegion.setAttribute('aria-atomic', 'true');
     liveRegion.className = 'sr-only';
     liveRegion.textContent = `Error: ${message}`;
-    
+
     document.body.appendChild(liveRegion);
-    
+
     setTimeout(() => {
       document.body.removeChild(liveRegion);
     }, 3000);

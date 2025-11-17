@@ -70,7 +70,7 @@ export const ExecutionTimeline = memo(function ExecutionTimeline({ className }: 
     let maxExec = 0;
     let minSuccess = Infinity;
     let maxSuccess = -Infinity;
-    
+
     for (const d of data) {
       maxExec = Math.max(maxExec, d.executions);
       minSuccess = Math.min(minSuccess, d.success_rate);
@@ -90,18 +90,18 @@ export const ExecutionTimeline = memo(function ExecutionTimeline({ className }: 
     for (let i = 0; i < dataLength; i++) {
       const d = data[i];
       const x = i * widthStep;
-      
+
       // Validate and sanitize data to prevent NaN values
       const executions = typeof d.executions === 'number' && !isNaN(d.executions) ? d.executions : 0;
       const successRate = typeof d.success_rate === 'number' && !isNaN(d.success_rate) ? d.success_rate : 0;
-      
+
       // Prevent division by zero
       const safeMaxExec = maxExec > 0 ? maxExec : 1;
       const safeSuccessRange = successRange > 0 ? successRange : 1;
-      
+
       const execY = innerHeight - (executions / safeMaxExec) * innerHeight;
       const successY = innerHeight - ((successRate - minSuccess) / safeSuccessRange) * innerHeight;
-      
+
       // Final validation to ensure no NaN values
       const safeExecY = isNaN(execY) ? innerHeight : execY;
       const safeSuccessY = isNaN(successY) ? innerHeight : successY;
@@ -156,7 +156,7 @@ export const ExecutionTimeline = memo(function ExecutionTimeline({ className }: 
             <span>Refresh</span>
           </button>
         </div>
-        
+
         <div className="flex items-center justify-center h-64">
           <div className="flex flex-col items-center space-y-2">
             <Renew className="h-8 w-8 text-muted-foreground animate-spin" />
@@ -193,7 +193,7 @@ export const ExecutionTimeline = memo(function ExecutionTimeline({ className }: 
             <span>Retry</span>
           </button>
         </div>
-        
+
         <div className="flex items-center justify-center h-64">
           <div className="flex flex-col items-center space-y-4 text-center">
             <Warning className="h-12 w-12" style={{ color: "var(--status-error)" }} />
@@ -246,7 +246,7 @@ export const ExecutionTimeline = memo(function ExecutionTimeline({ className }: 
             <span>Refresh</span>
           </button>
         </div>
-        
+
         <div className="flex items-center justify-center h-64">
           <div className="flex flex-col items-center space-y-2 text-center">
             <Analytics className="h-12 w-12 text-muted-foreground" />
@@ -555,7 +555,7 @@ export const ExecutionTimeline = memo(function ExecutionTimeline({ className }: 
         <div className="flex items-center space-x-2">
           <div
             className="w-3 h-0.5"
-            style={{ 
+            style={{
               backgroundColor: "var(--status-success)",
               borderTop: "2px dashed var(--status-success)",
               height: "0px"

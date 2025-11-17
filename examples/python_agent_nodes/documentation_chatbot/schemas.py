@@ -56,7 +56,7 @@ class RetrievalResult(BaseModel):
     score: float = Field(description="Similarity score")
     metadata: Dict[str, Any] = Field(
         default_factory=dict,
-        description="Additional metadata including document_key reference"
+        description="Additional metadata including document_key reference",
     )
 
 
@@ -69,8 +69,7 @@ class DocumentContext(BaseModel):
     matching_chunks: int = Field(description="Number of chunks that matched queries")
     relevance_score: float = Field(description="Aggregated relevance score")
     matched_sections: List[str] = Field(
-        default_factory=list,
-        description="Section headings where chunks matched"
+        default_factory=list, description="Section headings where chunks matched"
     )
 
 
@@ -96,15 +95,17 @@ class DocAnswer(BaseModel):
     """Final response from the QA system - maintains frontend contract."""
 
     answer: str = Field(description="Markdown answer with inline citations like [A][B]")
-    citations: List[Citation] = Field(description="Full citation details for references")
+    citations: List[Citation] = Field(
+        description="Full citation details for references"
+    )
     confidence: str = Field(
         description="Answer confidence: 'high', 'partial', or 'insufficient'"
     )
     needs_more: bool = Field(
         default=False,
-        description="True if more retrieval needed to fully answer question"
+        description="True if more retrieval needed to fully answer question",
     )
     missing_topics: List[str] = Field(
         default_factory=list,
-        description="Specific topics/info needed if needs_more=True"
+        description="Specific topics/info needed if needs_more=True",
     )

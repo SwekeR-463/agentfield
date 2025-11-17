@@ -109,7 +109,7 @@ export function Navigation({ currentPage, onPageChange }: NavigationProps) {
           >
             <Icon className={`h-4 w-4 transition-transform duration-200 ${!item.disabled ? 'group-hover:scale-105' : ''}`} />
             <span className="whitespace-nowrap hidden sm:inline">{item.label}</span>
-            
+
             {/* Active indicator */}
             {isActive && (
               <div className="absolute inset-x-0 bottom-0 h-0.5 bg-foreground rounded-full" />

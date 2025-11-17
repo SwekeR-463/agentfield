@@ -103,7 +103,7 @@ export function WorkflowTimeline({
       });
 
       const nodesWithNotesData = await Promise.all(notesPromises);
-      
+
       // Collect all unique tags
       const allTags = new Set<string>();
       nodesWithNotesData.forEach(node => {
@@ -130,7 +130,7 @@ export function WorkflowTimeline({
   const filteredAndSortedNodes = nodesWithNotes
     .filter(node => {
       if (selectedTags.length === 0) return true;
-      
+
       return node.notes.some(note =>
         note.tags.some(tag =>
           selectedTags.some(selectedTag =>
@@ -224,7 +224,7 @@ export function WorkflowTimeline({
               </span>
             )}
           </CardTitle>
-          
+
           <div className="flex items-center gap-2">
             {/* Sort toggle */}
             <Button

@@ -124,7 +124,7 @@ export function ReasonersSkillsTable({
     if ((event.target as HTMLElement).closest('button')) {
       return;
     }
-    
+
     if (item.type === "reasoner" && nodeId) {
       handleReasonerClick(item.id);
     }
@@ -248,7 +248,7 @@ export function ReasonersSkillsTable({
                     {getTypeIcon(item.type)}
                   </div>
                 </TableCell>
-                
+
                 <TableCell>
                   <div className="flex items-center gap-2">
                     <span className="font-medium text-text-primary">
@@ -269,7 +269,7 @@ export function ReasonersSkillsTable({
                     </Badge>
                   </div>
                 </TableCell>
-                
+
                 <TableCell>
                   {item.did ? (
                     <div className="flex items-center gap-2 group">
@@ -291,7 +291,7 @@ export function ReasonersSkillsTable({
                     <span className="text-text-quaternary text-xs">No DID</span>
                   )}
                 </TableCell>
-                
+
                 <TableCell>
                   <div className="flex items-center gap-1.5">
                     {getStatusDot(item.status)}
@@ -300,7 +300,7 @@ export function ReasonersSkillsTable({
                     </span>
                   </div>
                 </TableCell>
-                
+
                 <TableCell>
                   <div className="space-y-1">
                     {item.exposure_level && (
@@ -311,13 +311,13 @@ export function ReasonersSkillsTable({
                         {item.exposure_level}
                       </Badge>
                     )}
-                    
+
                     {item.memory_retention && (
                       <div className="text-xs text-text-tertiary">
                         Memory: {item.memory_retention}
                       </div>
                     )}
-                    
+
                     {item.capabilities && item.capabilities.length > 0 && (
                       <div className="flex flex-wrap gap-1">
                         {item.capabilities.slice(0, 2).map((capability, index) => (
@@ -339,7 +339,7 @@ export function ReasonersSkillsTable({
                         )}
                       </div>
                     )}
-                    
+
                     {item.tags && item.tags.length > 0 && (
                       <div className="flex flex-wrap gap-1">
                         {item.tags.slice(0, 2).map((tag, index) => (

@@ -97,18 +97,18 @@ function hasRunningWorkflows(data: WorkflowDAGResponse | null): boolean {
  */
 function getSmartPollingInterval(data: WorkflowDAGResponse | null, baseInterval: number): number {
   if (!data) return baseInterval;
-  
+
   const hasRunning = hasRunningWorkflows(data);
-  
+
   if (hasRunning) {
     // Fast polling for active workflows (2-3 seconds)
     return 2500;
   }
-  
+
   // Check if the workflow completed recently (within last 5 minutes)
   const fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
   const rootNode = data.dag; // The root node represents the overall workflow
-  
+
   if (rootNode.completed_at) {
     const completedTime = new Date(rootNode.completed_at).getTime();
     if (completedTime > fiveMinutesAgo) {
@@ -116,7 +116,7 @@ function getSmartPollingInterval(data: WorkflowDAGResponse | null, baseInterval:
       return 12000;
     }
   }
-  
+
   // Slow polling for stable workflows (60 seconds)
   return 60000;
 }
@@ -228,7 +228,7 @@ export function useWorkflowDAG(workflowId: string | null, options: UseWorkflowDA
 
     clearRefreshTimeout();
 
-    const interval = smartPolling 
+    const interval = smartPolling
       ? getSmartPollingInterval(state.data, refreshInterval)
       : refreshInterval;
 

@@ -34,7 +34,7 @@ export const AVAILABLE_LAYOUTS: LayoutConfig[] = [
     dagreType: 'flow',
     suitableForLargeGraphs: false,
   },
-  
+
   // ELK Box layout only (optimized for large graphs)
   {
     id: 'box',

@@ -25,7 +25,7 @@ CREATE INDEX IF NOT EXISTS idx_workflow_executions_execution_notes ON workflow_e
 -- =============================================================================
 -- QUERY PATTERN OPTIMIZATION SUMMARY
 -- =============================================================================
--- 
+--
 -- These indexes are designed to optimize the following query patterns:
 --
 -- 1. Retrieve notes for specific execution:

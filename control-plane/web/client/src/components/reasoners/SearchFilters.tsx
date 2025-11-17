@@ -2,12 +2,12 @@ import { useState, useEffect } from 'react';
 import type { SearchFiltersProps } from '../../types/reasoners';
 import { SearchBar } from "@/components/ui/SearchBar";
 
-export function SearchFilters({ 
-  filters, 
-  onFiltersChange, 
-  totalCount = 0, 
-  onlineCount = 0, 
-  offlineCount = 0 
+export function SearchFilters({
+  filters,
+  onFiltersChange,
+  totalCount = 0,
+  onlineCount = 0,
+  offlineCount = 0
 }: SearchFiltersProps) {
   const [searchInput, setSearchInput] = useState(filters?.search || '');
 
@@ -79,7 +79,7 @@ export function SearchFilters({
       {/* Status Filter Buttons - Reordered with Online first */}
       <div className="flex items-center gap-2 mb-4">
         <span className="text-[var(--text-secondary)] text-xs font-medium mr-2">Status:</span>
-        
+
         <button
           onClick={() => handleStatusChange('online')}
           className={`
@@ -144,7 +144,7 @@ export function SearchFilters({
             </>
           )}
         </div>
-        
+
         {hasActiveFilters && (
           <div className="flex items-center gap-1 text-[var(--text-tertiary)]">
             <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">

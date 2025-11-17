@@ -57,7 +57,7 @@ interface ToolTestOptions {
 
 /**
  * Custom hook for MCP tool exploration and testing
- * 
+ *
  * @param nodeId - The node ID
  * @param serverId - The server ID/alias
  * @returns Object containing tools state and testing functions
@@ -139,7 +139,7 @@ export function useMCPTools(
 
     try {
       const response: MCPToolsResponse = await getMCPTools(nodeId, serverId);
-      
+
       if (!mountedRef.current) return;
 
       setState(prev => ({
@@ -210,7 +210,7 @@ export function useMCPTools(
 
     try {
       const response = await testMCPTool(nodeId, serverId, toolName, parameters, timeoutMs);
-      
+
       if (!mountedRef.current) return null;
 
       // Update execution history
@@ -229,7 +229,7 @@ export function useMCPTools(
       if (!mountedRef.current) return null;
 
       const errorMessage = error instanceof Error ? error.message : 'Tool execution failed';
-      
+
       // Update execution history
       if (executionId) {
         updateExecution(executionId, {
@@ -380,20 +380,20 @@ export function useMCPTools(
   return {
     // State
     ...state,
-    
+
     // Tool management
     fetchTools,
     refreshTools: fetchTools,
-    
+
     // Tool execution
     executeTool,
     testToolWithSample,
     reExecute,
-    
+
     // History management
     clearExecutions,
     clearError,
-    
+
     // Utility functions
     getToolExecutions,
     getSuccessfulExecutions,
@@ -401,7 +401,7 @@ export function useMCPTools(
     getExecutionStats,
     searchTools,
     getTool,
-    
+
     // Computed properties
     hasTools: state.tools.length > 0,
     hasExecutions: state.executions.length > 0,
@@ -415,7 +415,7 @@ export function useMCPTools(
  */
 function generateSampleParameters(schema: any): Record<string, any> {
   const params: Record<string, any> = {};
-  
+
   if (!schema || !schema.properties) return params;
 
   for (const [key, fieldSchema] of Object.entries(schema.properties as Record<string, any>)) {
@@ -424,7 +424,7 @@ function generateSampleParameters(schema: any): Record<string, any> {
     } else if (fieldSchema.type === 'number') {
       params[key] = fieldSchema.example || fieldSchema.default || 42;
     } else if (fieldSchema.type === 'boolean') {
-      params[key] = fieldSchema.example !== undefined ? fieldSchema.example : 
+      params[key] = fieldSchema.example !== undefined ? fieldSchema.example :
                    fieldSchema.default !== undefined ? fieldSchema.default : true;
     } else if (fieldSchema.type === 'array') {
       params[key] = fieldSchema.example || fieldSchema.default || [];

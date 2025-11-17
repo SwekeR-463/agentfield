@@ -13,7 +13,7 @@ const API_BASE_URL = '/api/ui/v1';
 
 export class ReasonersApiError extends Error {
   public status?: number;
-  
+
   constructor(message: string, status?: number) {
     super(message);
     this.name = 'ReasonersApiError';
@@ -27,7 +27,7 @@ export const reasonersApi = {
    */
   getAllReasoners: async (filters: ReasonerFilters = {}): Promise<ReasonersResponse> => {
     const params = new URLSearchParams();
-    
+
     if (filters.status && filters.status !== 'all') {
       params.append('status', filters.status);
     }
@@ -42,19 +42,19 @@ export const reasonersApi = {
     }
 
     const url = `${API_BASE_URL}/reasoners/all${params.toString() ? `?${params.toString()}` : ''}`;
-    
+
     try {
       const response = await fetch(url);
-      
+
       if (!response.ok) {
         throw new ReasonersApiError(
           `Failed to fetch reasoners: ${response.statusText}`,
           response.status
         );
       }
-      
+
       const data: ReasonersResponse = await response.json();
-      
+
       // Validate and ensure proper structure
       const validatedData: ReasonersResponse = {
         reasoners: Array.isArray(data.reasoners) ? data.reasoners : [],
@@ -63,7 +63,7 @@ export const reasonersApi = {
         offline_count: typeof data.offline_count === 'number' ? data.offline_count : 0,
         nodes_count: typeof data.nodes_count === 'number' ? data.nodes_count : 0,
       };
-      
+
       return validatedData;
     } catch (error) {
       if (error instanceof ReasonersApiError) {
@@ -78,10 +78,10 @@ export const reasonersApi = {
    */
   getReasonerDetails: async (reasonerId: string): Promise<ReasonerWithNode> => {
     const url = `${API_BASE_URL}/reasoners/${encodeURIComponent(reasonerId)}/details`;
-    
+
     try {
       const response = await fetch(url);
-      
+
       if (!response.ok) {
         if (response.status === 404) {
           throw new ReasonersApiError('Reasoner not found', 404);
@@ -91,7 +91,7 @@ export const reasonersApi = {
           response.status
         );
       }
-      
+
       const data: ReasonerWithNode = await response.json();
       return data;
     } catch (error) {
@@ -108,7 +108,7 @@ export const reasonersApi = {
    */
   executeReasoner: async (reasonerId: string, request: ExecutionRequest): Promise<ExecutionResponse> => {
     const url = `/api/v1/execute/${encodeURIComponent(reasonerId)}`;
-    
+
     try {
       const response = await fetch(url, {
         method: 'POST',
@@ -117,7 +117,7 @@ export const reasonersApi = {
         },
         body: JSON.stringify(request),
       });
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         throw new ReasonersApiError(
@@ -125,33 +125,33 @@ export const reasonersApi = {
           response.status
         );
       }
-      
+
       const data: ExecutionResponse = await response.json();
-      
+
       // Validate response structure
       if (!data || typeof data !== 'object') {
         console.error('Invalid response structure:', data);
         throw new ReasonersApiError('Invalid response format from server');
       }
-      
+
       // Log response for debugging if it seems malformed
       if (!data.result && !data.error_message && data.status !== 'succeeded') {
         console.warn('Response missing both result and error_message fields:', data);
       }
-      
+
       return data;
     } catch (error) {
       if (error instanceof ReasonersApiError) {
         throw error;
       }
-      
+
       // Enhanced error logging for debugging
       console.error('Reasoner execution error:', {
         reasonerId,
         request,
         error: error instanceof Error ? error.message : error
       });
-      
+
       throw new ReasonersApiError(`Network error: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   },
@@ -162,7 +162,7 @@ export const reasonersApi = {
    */
   executeReasonerAsync: async (reasonerId: string, request: ExecutionRequest): Promise<AsyncExecuteResponse> => {
     const url = `/api/v1/execute/async/${encodeURIComponent(reasonerId)}`;
-    
+
     try {
       const response = await fetch(url, {
         method: 'POST',
@@ -171,7 +171,7 @@ export const reasonersApi = {
         },
         body: JSON.stringify(request),
       });
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         throw new ReasonersApiError(
@@ -179,28 +179,28 @@ export const reasonersApi = {
           response.status
         );
       }
-      
+
       const data: AsyncExecuteResponse = await response.json();
-      
+
       // Validate response structure
       if (!data || typeof data !== 'object' || !data.execution_id) {
         console.error('Invalid async response structure:', data);
         throw new ReasonersApiError('Invalid async response format from server');
       }
-      
+
       return data;
     } catch (error) {
       if (error instanceof ReasonersApiError) {
         throw error;
       }
-      
+
       // Enhanced error logging for debugging
       console.error('Reasoner async execution error:', {
         reasonerId,
         request,
         error: error instanceof Error ? error.message : error
       });
-      
+
       throw new ReasonersApiError(`Network error: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   },
@@ -211,10 +211,10 @@ export const reasonersApi = {
    */
   getExecutionStatus: async (executionId: string): Promise<ExecutionStatusResponse> => {
     const url = `/api/v1/executions/${encodeURIComponent(executionId)}`;
-    
+
     try {
       const response = await fetch(url);
-      
+
       if (!response.ok) {
         if (response.status === 404) {
           throw new ReasonersApiError('Execution not found', 404);
@@ -224,26 +224,26 @@ export const reasonersApi = {
           response.status
         );
       }
-      
+
       const data: ExecutionStatusResponse = await response.json();
-      
+
       // Validate response structure
       if (!data || typeof data !== 'object' || !data.execution_id) {
         console.error('Invalid execution status response structure:', data);
         throw new ReasonersApiError('Invalid execution status response format from server');
       }
-      
+
       return data;
     } catch (error) {
       if (error instanceof ReasonersApiError) {
         throw error;
       }
-      
+
       console.error('Execution status fetch error:', {
         executionId,
         error: error instanceof Error ? error.message : error
       });
-      
+
       throw new ReasonersApiError(`Network error: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   },
@@ -253,17 +253,17 @@ export const reasonersApi = {
    */
   getPerformanceMetrics: async (reasonerId: string): Promise<PerformanceMetrics> => {
     const url = `${API_BASE_URL}/reasoners/${encodeURIComponent(reasonerId)}/metrics`;
-    
+
     try {
       const response = await fetch(url);
-      
+
       if (!response.ok) {
         throw new ReasonersApiError(
           `Failed to fetch performance metrics: ${response.statusText}`,
           response.status
         );
       }
-      
+
       const data: PerformanceMetrics = await response.json();
       return data;
     } catch (error) {
@@ -278,27 +278,27 @@ export const reasonersApi = {
    * Get execution history for a specific reasoner
    */
   getExecutionHistory: async (
-    reasonerId: string, 
-    page: number = 1, 
+    reasonerId: string,
+    page: number = 1,
     limit: number = 20
   ): Promise<ExecutionHistory> => {
     const params = new URLSearchParams({
       page: page.toString(),
       limit: limit.toString(),
     });
-    
+
     const url = `${API_BASE_URL}/reasoners/${encodeURIComponent(reasonerId)}/executions?${params.toString()}`;
-    
+
     try {
       const response = await fetch(url);
-      
+
       if (!response.ok) {
         throw new ReasonersApiError(
           `Failed to fetch execution history: ${response.statusText}`,
           response.status
         );
       }
-      
+
       const data: ExecutionHistory = await response.json();
       return data;
     } catch (error) {
@@ -314,17 +314,17 @@ export const reasonersApi = {
    */
   getExecutionTemplates: async (reasonerId: string): Promise<ExecutionTemplate[]> => {
     const url = `${API_BASE_URL}/reasoners/${encodeURIComponent(reasonerId)}/templates`;
-    
+
     try {
       const response = await fetch(url);
-      
+
       if (!response.ok) {
         throw new ReasonersApiError(
           `Failed to fetch execution templates: ${response.statusText}`,
           response.status
         );
       }
-      
+
       const data: ExecutionTemplate[] = await response.json();
       return data;
     } catch (error) {
@@ -339,11 +339,11 @@ export const reasonersApi = {
    * Save an execution template
    */
   saveExecutionTemplate: async (
-    reasonerId: string, 
+    reasonerId: string,
     template: Omit<ExecutionTemplate, 'id' | 'created_at'>
   ): Promise<ExecutionTemplate> => {
     const url = `${API_BASE_URL}/reasoners/${encodeURIComponent(reasonerId)}/templates`;
-    
+
     try {
       const response = await fetch(url, {
         method: 'POST',
@@ -352,14 +352,14 @@ export const reasonersApi = {
         },
         body: JSON.stringify(template),
       });
-      
+
       if (!response.ok) {
         throw new ReasonersApiError(
           `Failed to save execution template: ${response.statusText}`,
           response.status
         );
       }
-      
+
       const data: ExecutionTemplate = await response.json();
       return data;
     } catch (error) {

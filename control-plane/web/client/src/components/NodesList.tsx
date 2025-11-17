@@ -109,7 +109,7 @@ const NodesList: React.FC = () => {
           </Badge>
         </div>
       </div>
-      
+
       {error && (
         <Alert variant="destructive">
           <Terminal className="h-4 w-4" />
@@ -117,7 +117,7 @@ const NodesList: React.FC = () => {
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
-      
+
       <AgentNodesTable nodes={nodes} isLoading={isLoading} error={error} />
     </div>
   );

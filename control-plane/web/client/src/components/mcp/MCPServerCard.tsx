@@ -45,7 +45,7 @@ export function MCPServerCard({
 
   const handleAction = async (action: MCPServerAction) => {
     if (!onAction || actionLoading) return;
-    
+
     try {
       setActionLoading(action);
       await onAction(action, server.alias);
@@ -67,7 +67,7 @@ export function MCPServerCard({
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffMins = Math.floor(diffMs / (1000 * 60));
-    
+
     if (diffMins < 1) return 'Just now';
     if (diffMins < 60) return `${diffMins}m ago`;
     const diffHours = Math.floor(diffMins / 60);
@@ -78,7 +78,7 @@ export function MCPServerCard({
 
   const getActionButtons = () => {
     const buttons = [];
-    
+
     if (server.status === 'running') {
       buttons.push(
         <Button
@@ -97,7 +97,7 @@ export function MCPServerCard({
           Stop
         </Button>
       );
-      
+
       buttons.push(
         <Button
           key="restart"
@@ -133,7 +133,7 @@ export function MCPServerCard({
         </Button>
       );
     }
-    
+
     return buttons;
   };
 
@@ -160,14 +160,14 @@ export function MCPServerCard({
               </div>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-2">
             {isDeveloperMode && (
               <div className="flex gap-1">
                 {getActionButtons()}
               </div>
             )}
-            
+
             {isDeveloperMode && (
               <Button
                 variant="ghost"
@@ -194,7 +194,7 @@ export function MCPServerCard({
             <span className="text-muted-foreground">Uptime:</span>
             <span className="font-medium">{formatUptime(server.uptime_formatted)}</span>
           </div>
-          
+
           {server.success_rate !== undefined && (
             <div className="flex items-center gap-2">
               <span className="text-muted-foreground">Success Rate:</span>
@@ -229,21 +229,21 @@ export function MCPServerCard({
                     <span className="ml-2 font-mono">{server.port}</span>
                   </div>
                 )}
-                
+
                 {server.process_id && (
                   <div>
                     <span className="text-muted-foreground">PID:</span>
                     <span className="ml-2 font-mono">{server.process_id}</span>
                   </div>
                 )}
-                
+
                 {server.avg_response_time_ms !== undefined && (
                   <div>
                     <span className="text-muted-foreground">Avg Response:</span>
                     <span className="ml-2 font-medium">{server.avg_response_time_ms}ms</span>
                   </div>
                 )}
-                
+
                 <div>
                   <span className="text-muted-foreground">Last Check:</span>
                   <span className="ml-2 font-medium">
@@ -251,7 +251,7 @@ export function MCPServerCard({
                   </span>
                 </div>
               </div>
-              
+
               {server.started_at && (
                 <div className="text-sm">
                   <span className="text-muted-foreground">Started:</span>

@@ -368,16 +368,16 @@ class AgentMCP:
         mcp_skill_function.__name__ = skill_name
         mcp_skill_function.__doc__ = f"""
         {tool.get("description", f"MCP tool: {tool_name}")}
-        
+
         This is an auto-generated skill that wraps the '{tool_name}' tool from the '{server_alias}' MCP server.
-        
+
         Args:
             execution_context (ExecutionContext, optional): AgentField execution context for workflow tracking
             **kwargs: Arguments to pass to the MCP tool
-            
+
         Returns:
             Any: The result from the MCP tool execution
-            
+
         Raises:
             Exception: If the MCP server is unavailable or the tool execution fails
         """

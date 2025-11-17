@@ -158,13 +158,13 @@ export function WorkflowDetailPage() {
     setTimelineNoteExpansions(prev => {
       const currentSet = prev[executionId] || new Set();
       const newSet = new Set(currentSet);
-      
+
       if (expanded) {
         newSet.add(noteIndex);
       } else {
         newSet.delete(noteIndex);
       }
-      
+
       return {
         ...prev,
         [executionId]: newSet
@@ -203,8 +203,8 @@ export function WorkflowDetailPage() {
   return (
     <div className="container mx-auto px-4 py-6 space-y-4">
       {/* Ultra-Compact Workflow Summary with Close and Live Updates */}
-      <CompactWorkflowSummary 
-        workflow={workflow} 
+      <CompactWorkflowSummary
+        workflow={workflow}
         onClose={handleClose}
         isLiveUpdating={!!dagData}
         hasRunningWorkflows={hasRunningWorkflows}
@@ -217,7 +217,7 @@ export function WorkflowDetailPage() {
       {dagError && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-md text-sm">
           Failed to load workflow data: {dagError.message}
-          <button 
+          <button
             onClick={refreshDAG}
             className="ml-2 text-red-600 hover:text-red-800 underline"
           >
@@ -354,7 +354,7 @@ function WorkflowDetailSkeleton() {
                     <Skeleton className="h-8 w-8" />
                   </div>
                 </div>
-                
+
                 {/* Tag filter skeleton */}
                 <div className="flex gap-2">
                   <Skeleton className="h-6 w-16" />

@@ -34,10 +34,10 @@ export function TagBadge({
   className = '',
 }: TagBadgeProps) {
   const tagColor = color || getTagColor(tag);
-  const sizeClasses = size === 'sm' 
-    ? 'px-2 py-1 text-xs' 
+  const sizeClasses = size === 'sm'
+    ? 'px-2 py-1 text-xs'
     : 'px-3 py-1.5 text-sm';
-  
+
   const baseClasses = `
     inline-flex items-center gap-1 rounded-md border font-medium
     transition-all duration-fast ease-smooth
@@ -61,7 +61,7 @@ export function TagBadge({
   };
 
   return (
-    <span 
+    <span
       className={baseClasses}
       onClick={handleClick}
       role={onClick ? "button" : undefined}

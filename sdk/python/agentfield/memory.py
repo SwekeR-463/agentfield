@@ -345,10 +345,15 @@ class ScopedMemoryClient:
         return await self.memory_client.list_keys(self.scope)
 
     async def set_vector(
-        self, key: str, embedding: Union[Sequence[float], Any], metadata: Optional[Dict[str, Any]] = None
+        self,
+        key: str,
+        embedding: Union[Sequence[float], Any],
+        metadata: Optional[Dict[str, Any]] = None,
     ) -> None:
         """Store a vector within this scope."""
-        await self.memory_client.set_vector(key, embedding, metadata=metadata, scope=self.scope)
+        await self.memory_client.set_vector(
+            key, embedding, metadata=metadata, scope=self.scope
+        )
 
     async def delete_vector(self, key: str) -> None:
         """Delete a vector within this scope."""
@@ -417,10 +422,15 @@ class GlobalMemoryClient:
         return await self.memory_client.list_keys("global")
 
     async def set_vector(
-        self, key: str, embedding: Union[Sequence[float], Any], metadata: Optional[Dict[str, Any]] = None
+        self,
+        key: str,
+        embedding: Union[Sequence[float], Any],
+        metadata: Optional[Dict[str, Any]] = None,
     ) -> None:
         """Store a vector in global scope."""
-        await self.memory_client.set_vector(key, embedding, metadata=metadata, scope="global")
+        await self.memory_client.set_vector(
+            key, embedding, metadata=metadata, scope="global"
+        )
 
     async def delete_vector(self, key: str) -> None:
         """Delete a vector in global scope."""

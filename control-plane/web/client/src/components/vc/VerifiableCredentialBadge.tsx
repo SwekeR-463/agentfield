@@ -16,10 +16,10 @@ import {
   verifyExecutionVCComprehensive,
   verifyWorkflowVCComprehensive,
 } from "../../services/vcApi";
-import type { 
-  ExecutionVC, 
-  WorkflowVC, 
-  ComprehensiveVCVerificationResult 
+import type {
+  ExecutionVC,
+  WorkflowVC,
+  ComprehensiveVCVerificationResult
 } from "../../types/did";
 
 interface VerifiableCredentialBadgeProps {
@@ -42,12 +42,12 @@ interface VerificationModalProps {
   error: string | null;
 }
 
-function VerificationModal({ 
-  isOpen, 
-  onClose, 
-  verificationResult, 
-  isLoading, 
-  error 
+function VerificationModal({
+  isOpen,
+  onClose,
+  verificationResult,
+  isLoading,
+  error
 }: VerificationModalProps) {
   if (!isOpen) return null;
 

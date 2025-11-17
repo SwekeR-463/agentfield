@@ -1,14 +1,14 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
-import type { 
-  VCStatusSummary, 
-  WorkflowVCChainResponse, 
+import type {
+  VCStatusSummary,
+  WorkflowVCChainResponse,
   VCVerificationResponse,
-  AuditTrailEntry 
+  AuditTrailEntry
 } from '../types/did';
-import { 
-  getVCStatusSummary, 
-  getWorkflowVCChain, 
-  verifyVC, 
+import {
+  getVCStatusSummary,
+  getWorkflowVCChain,
+  verifyVC,
   getWorkflowAuditTrail,
   getExecutionVCStatus,
   getWorkflowVCStatuses
@@ -66,7 +66,7 @@ export function useVCStatus(workflowId: string) {
       setLoading(false);
       return;
     }
-    
+
     try {
       setLoading(true);
       setError(null);
@@ -103,7 +103,7 @@ export function useWorkflowVCChain(workflowId: string) {
 
   const fetchVCChain = useCallback(async () => {
     if (!workflowId) return;
-    
+
     try {
       setLoading(true);
       setError(null);
@@ -139,7 +139,7 @@ export function useAuditTrail(workflowId: string) {
 
   const fetchAuditTrail = useCallback(async () => {
     if (!workflowId) return;
-    
+
     try {
       setLoading(true);
       setError(null);
@@ -181,7 +181,7 @@ export function useExecutionVCStatus(executionId: string) {
 
   const fetchVCStatus = useCallback(async () => {
     if (!executionId) return;
-    
+
     try {
       setLoading(true);
       setError(null);
@@ -275,20 +275,20 @@ export function useVCExport() {
       setLoading(true);
       setError(null);
       setExportProgress(null);
-      
+
       // If progress callback is provided, simulate progress updates
       if (progressCallback) {
         progressCallback(0, 100, 'Starting export...');
         setExportProgress({ current: 0, total: 100, status: 'Starting export...' });
       }
-      
+
       const result = await exportOperation();
-      
+
       if (progressCallback) {
         progressCallback(100, 100, 'Export completed');
         setExportProgress({ current: 100, total: 100, status: 'Export completed' });
       }
-      
+
       return result;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Export failed';

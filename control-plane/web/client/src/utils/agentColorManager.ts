@@ -81,14 +81,14 @@ class AgentColorManager {
     const activeAgentKeys = new Set(
       activeAgentNames.map(name => this.getAgentKey(name))
     );
-    
+
     // Remove agents that are no longer active
     Object.keys(this.colorCache).forEach(agentKey => {
       if (!activeAgentKeys.has(agentKey)) {
         delete this.colorCache[agentKey];
       }
     });
-    
+
     // Rebuild used hues array from remaining agents
     this.usedHues = Object.values(this.colorCache).map(color => {
       // Extract hue from HSL color string

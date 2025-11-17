@@ -49,7 +49,7 @@ export class ErrorBoundary extends Component<Props, State> {
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     // Log error details
     console.error('ErrorBoundary caught an error:', error, errorInfo);
-    
+
     this.setState({
       error,
       errorInfo
@@ -70,10 +70,10 @@ export class ErrorBoundary extends Component<Props, State> {
 
     // Reset error state when specified props change
     if (hasError && resetOnPropsChange && resetKeys) {
-      const hasResetKeyChanged = resetKeys.some((key, index) => 
+      const hasResetKeyChanged = resetKeys.some((key, index) =>
         prevProps.resetKeys?.[index] !== key
       );
-      
+
       if (hasResetKeyChanged) {
         this.handleReset();
       }
@@ -125,7 +125,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 <p className="font-medium">
                   {error?.name || 'Error'}: {error?.message || 'An unexpected error occurred'}
                 </p>
-                
+
                 {process.env.NODE_ENV === 'development' && errorInfo && (
                   <details className="mt-2">
                     <summary className="cursor-pointer text-sm font-medium">
@@ -146,10 +146,10 @@ export class ErrorBoundary extends Component<Props, State> {
                 <Restart size={16} className="mr-2" />
                 Try Again
               </Button>
-              
-              <Button 
-                onClick={() => window.location.reload()} 
-                variant="secondary" 
+
+              <Button
+                onClick={() => window.location.reload()}
+                variant="secondary"
                 size="sm"
               >
                 Reload Page
@@ -182,7 +182,7 @@ export function withErrorBoundary<P extends object>(
   );
 
   WrappedComponent.displayName = `withErrorBoundary(${Component.displayName || Component.name})`;
-  
+
   return WrappedComponent;
 }
 
@@ -193,7 +193,7 @@ export function useErrorHandler() {
   return (error: Error, errorInfo?: ErrorInfo) => {
     // In a real app, you might want to send this to an error reporting service
     console.error('Manual error report:', error, errorInfo);
-    
+
     // For now, just throw to trigger the nearest error boundary
     throw error;
   };
@@ -202,11 +202,11 @@ export function useErrorHandler() {
 /**
  * MCP-specific error boundary with specialized error handling
  */
-export function MCPErrorBoundary({ 
-  children, 
+export function MCPErrorBoundary({
+  children,
   nodeId,
-  componentName 
-}: { 
+  componentName
+}: {
   children: ReactNode;
   nodeId?: string;
   componentName?: string;
@@ -228,13 +228,13 @@ export function MCPErrorBoundary({
       <div>
         <h4 className="font-medium">MCP Component Error</h4>
         <p className="text-sm mt-1">
-          {componentName ? `The ${componentName} component` : 'This MCP component'} 
+          {componentName ? `The ${componentName} component` : 'This MCP component'}
           {' '}encountered an error and couldn't be displayed.
           {nodeId && ` (Node: ${nodeId})`}
         </p>
-        <Button 
-          variant="outline" 
-          size="sm" 
+        <Button
+          variant="outline"
+          size="sm"
           className="mt-2"
           onClick={() => window.location.reload()}
         >
@@ -245,7 +245,7 @@ export function MCPErrorBoundary({
   );
 
   return (
-    <ErrorBoundary 
+    <ErrorBoundary
       onError={handleError}
       fallback={fallback}
       resetOnPropsChange={true}

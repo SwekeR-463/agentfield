@@ -220,7 +220,7 @@ export function RecentActivityStream({ className }: RecentActivityStreamProps) {
 
       {/* Error banner (if error but we have cached data) */}
       {hasError && executions.length > 0 && (
-        <div 
+        <div
           className="flex items-center justify-between p-3 rounded-lg border"
           style={{
             backgroundColor: "var(--status-warning-bg)",
@@ -241,7 +241,7 @@ export function RecentActivityStream({ className }: RecentActivityStreamProps) {
           <button
             onClick={clearError}
             className="text-xs transition-colors duration-200"
-            style={{ 
+            style={{
               color: "var(--status-warning)",
             }}
             onMouseEnter={(e) => {

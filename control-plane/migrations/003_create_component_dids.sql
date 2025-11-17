@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS component_dids (
     exposure_level TEXT NOT NULL DEFAULT 'private' CHECK (exposure_level IN ('private', 'public', 'restricted')),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    
+
     -- Foreign key constraints
     FOREIGN KEY (agent_did) REFERENCES agent_dids(did) ON DELETE CASCADE
 );

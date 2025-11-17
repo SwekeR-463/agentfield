@@ -82,7 +82,7 @@ export class ELKLayoutEngine {
     layoutType: ELKLayoutType
   ): Promise<{ nodes: Node[]; edges: Edge[] }> {
     const config = ELK_LAYOUTS[layoutType];
-    
+
     // Convert ReactFlow nodes to ELK format
     const elkNodes: ElkNode[] = nodes.map((node) => ({
       id: node.id,
@@ -142,11 +142,11 @@ export class ELKLayoutEngine {
   private calculateNodeWidth(nodeData: any): number {
     const taskText = nodeData.task_name || nodeData.reasoner_id || '';
     const agentText = nodeData.agent_name || nodeData.agent_node_id || '';
-    
+
     const minWidth = 200;
     const maxWidth = 360;
     const charWidth = 7.5;
-    
+
     const humanizeText = (text: string): string => {
       return text
         .replace(/_/g, ' ')
@@ -155,20 +155,20 @@ export class ELKLayoutEngine {
         .replace(/\s+/g, ' ')
         .trim();
     };
-    
+
     const taskHuman = humanizeText(taskText);
     const agentHuman = humanizeText(agentText);
-    
+
     const taskWordsLength = taskHuman.split(' ').reduce((max, word) => Math.max(max, word.length), 0);
     const agentWordsLength = agentHuman.split(' ').reduce((max, word) => Math.max(max, word.length), 0);
-    
+
     const longestWord = Math.max(taskWordsLength, agentWordsLength);
     const estimatedWidth = Math.max(
       longestWord * charWidth * 1.8,
       (taskHuman.length / 2.2) * charWidth,
       (agentHuman.length / 2.2) * charWidth
     ) + 80;
-    
+
     return Math.min(maxWidth, Math.max(minWidth, estimatedWidth));
   }
 

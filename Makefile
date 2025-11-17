@@ -38,4 +38,3 @@ tidy:
 clean:
 	rm -rf control-plane/bin control-plane/dist
 	find . -type d -name "__pycache__" -exec rm -rf {} +
-

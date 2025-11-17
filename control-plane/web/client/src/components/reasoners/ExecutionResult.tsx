@@ -80,7 +80,7 @@ export function ExecutionResult({ result, error, loading }: ExecutionResultProps
             {statusLabel}
           </Badge>
         </div>
-        
+
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
@@ -154,7 +154,7 @@ export function ExecutionResult({ result, error, loading }: ExecutionResultProps
               Copy Output
             </Button>
           </div>
-          
+
           <div className="relative">
             <pre className="bg-background border rounded-lg p-4 text-sm overflow-auto max-h-96 font-mono">
               {JSON.stringify(result.result, null, 2)}

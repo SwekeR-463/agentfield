@@ -45,10 +45,10 @@ export function useFilterState({
     if (!syncWithUrl || typeof window === 'undefined') return;
 
     const urlString = serializeFiltersToUrl(tags);
-    const newUrl = urlString 
+    const newUrl = urlString
       ? `${window.location.pathname}?${urlString}`
       : window.location.pathname;
-    
+
     // Only update if URL actually changed
     if (newUrl !== window.location.pathname + window.location.search) {
       window.history.replaceState({}, '', newUrl);

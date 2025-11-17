@@ -147,8 +147,8 @@ const NodeRow: React.FC<NodeRowProps> = ({ nodeSummary }) => {
           <TableCell>{nodeSummary.team_id}</TableCell>
           <TableCell>{nodeSummary.version}</TableCell>
           <TableCell>
-            <StatusIndicator 
-              status={nodeSummary.lifecycle_status} 
+            <StatusIndicator
+              status={nodeSummary.lifecycle_status}
               healthStatus={nodeSummary.health_status}
             />
           </TableCell>
@@ -199,7 +199,7 @@ const NodeRow: React.FC<NodeRowProps> = ({ nodeSummary }) => {
                         </div>
                       </div>
                     </div>
-                    
+
                     <Separator />
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

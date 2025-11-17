@@ -29,8 +29,8 @@ function getNodeIntersection(intersectionNode: any, targetNode: any) {
 
 // Returns the position (top, right, bottom, left) of a node compared to the intersection point
 function getEdgePosition(node: any, intersectionPoint: { x: number; y: number }) {
-  const n = { 
-    ...(node.internals?.positionAbsolute || node.position), 
+  const n = {
+    ...(node.internals?.positionAbsolute || node.position),
     ...(node.measured || { width: 120, height: 60 })
   };
   const nx = Math.round(n.x);

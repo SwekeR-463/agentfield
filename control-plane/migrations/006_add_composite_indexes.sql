@@ -37,7 +37,7 @@ CREATE INDEX IF NOT EXISTS idx_workflow_executions_session_actor ON workflow_exe
 -- =============================================================================
 -- QUERY PATTERN OPTIMIZATION SUMMARY
 -- =============================================================================
--- 
+--
 -- These composite indexes are designed to optimize the following query patterns:
 --
 -- 1. QueryWorkflows primary pattern:

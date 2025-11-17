@@ -2,13 +2,13 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
-import { 
-  Settings, 
-  Play, 
-  Stop, 
-  Package, 
-  Time, 
-  User, 
+import {
+  Settings,
+  Play,
+  Stop,
+  Package,
+  Time,
+  User,
   Tag,
   InProgress,
   CheckmarkFilled,
@@ -36,7 +36,7 @@ export const AgentPackageCard: React.FC<AgentPackageCardProps> = ({
   isLoading = false
 }) => {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
-  
+
   const configStatusBadge = getConfigurationStatusBadge(pkg.configuration_status);
   const agentStatusBadge = agentStatus ? getAgentStatusBadge(agentStatus.status) : null;
 

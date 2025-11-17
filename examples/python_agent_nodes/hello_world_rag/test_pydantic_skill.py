@@ -14,6 +14,7 @@ from agentfield import Agent
 # Define Pydantic models
 class IngestRequest(BaseModel):
     """Pydantic model for document ingestion request."""
+
     document_id: str
     path: Optional[str] = None
     text: Optional[str] = None
@@ -21,6 +22,7 @@ class IngestRequest(BaseModel):
 
 class IngestResult(BaseModel):
     """Result of document ingestion."""
+
     document_id: str
     chunks_processed: int
     status: str
@@ -55,18 +57,14 @@ async def ingest_with_model(request: IngestRequest) -> IngestResult:
     chunks = 5 if request.text or request.path else 0
 
     return IngestResult(
-        document_id=request.document_id,
-        chunks_processed=chunks,
-        status="success"
+        document_id=request.document_id, chunks_processed=chunks, status="success"
     )
 
 
 # Approach 2: Using plain parameters (EXISTING - backward compatible)
 @app.skill()
 async def ingest_with_params(
-    document_id: str,
-    path: Optional[str] = None,
-    text: Optional[str] = None
+    document_id: str, path: Optional[str] = None, text: Optional[str] = None
 ) -> IngestResult:
     """
     Skill using plain parameters.
@@ -85,9 +83,7 @@ async def ingest_with_params(
     chunks = 5 if text or path else 0
 
     return IngestResult(
-        document_id=document_id,
-        chunks_processed=chunks,
-        status="success"
+        document_id=document_id, chunks_processed=chunks, status="success"
     )
 
 

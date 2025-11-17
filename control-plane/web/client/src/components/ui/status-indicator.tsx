@@ -110,8 +110,8 @@ const StatusIndicator: React.FC<StatusIndicatorProps> = ({
           <div
             className={cn(
               "absolute w-3 h-3 rounded-full animate-ping opacity-40",
-              normalizeExecutionStatus(status) === 'running' ? "bg-blue-500" : 
-              status === 'starting' ? "bg-orange-500" : 
+              normalizeExecutionStatus(status) === 'running' ? "bg-blue-500" :
+              status === 'starting' ? "bg-orange-500" :
               "bg-yellow-500"
             )}
           />

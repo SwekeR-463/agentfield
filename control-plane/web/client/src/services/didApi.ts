@@ -59,7 +59,7 @@ export async function getAgentDIDInfo(nodeId: string): Promise<AgentDIDInfo> {
  */
 export async function getDIDStatusSummary(nodeId: string): Promise<DIDStatusSummary> {
   const didInfo = await getAgentDIDInfo(nodeId).catch(() => null);
-  
+
   if (!didInfo) {
     return {
       has_did: false,
@@ -109,7 +109,7 @@ export async function getDIDSystemStatus(): Promise<{
  */
 export async function listAgentDIDs(filters?: DIDFilters): Promise<string[]> {
   const queryParams = new URLSearchParams();
-  
+
   if (filters) {
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== null && value !== '') {
@@ -117,10 +117,10 @@ export async function listAgentDIDs(filters?: DIDFilters): Promise<string[]> {
       }
     });
   }
-  
+
   const queryString = queryParams.toString();
   const url = `/did/agents${queryString ? `?${queryString}` : ''}`;
-  
+
   const response = await fetchWrapper<{ agent_dids: string[] }>(url);
   return response.agent_dids;
 }
@@ -145,7 +145,7 @@ export function formatDIDForDisplay(did: string, maxLength: number = 20): string
   if (did.length <= maxLength) {
     return did;
   }
-  
+
   const start = did.substring(0, Math.floor(maxLength / 2) - 2);
   const end = did.substring(did.length - Math.floor(maxLength / 2) + 2);
   return `${start}...${end}`;

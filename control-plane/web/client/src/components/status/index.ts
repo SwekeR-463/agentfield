@@ -1,10 +1,10 @@
 // Unified Status Components
 export { UnifiedStatusIndicator, isStatusHealthy, getStatusPriority } from './UnifiedStatusIndicator';
 export { StatusRefreshButton, useOptimisticStatusRefresh } from './StatusRefreshButton';
-export { 
-  StatusBadge, 
-  AgentStateBadge, 
-  HealthStatusBadge, 
+export {
+  StatusBadge,
+  AgentStateBadge,
+  HealthStatusBadge,
   LifecycleStatusBadge,
   getHealthScoreColor,
   getHealthScoreBadgeVariant

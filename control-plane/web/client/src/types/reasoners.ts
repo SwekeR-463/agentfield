@@ -3,12 +3,12 @@ export interface ReasonerWithNode {
   reasoner_id: string;   // Format: "node_id.reasoner_id"
   name: string;          // Human-readable name
   description: string;   // Reasoner description
-  
+
   // Node context
   node_id: string;
   node_status: 'active' | 'inactive' | 'unknown';
   node_version: string;
-  
+
   // Reasoner details
   input_schema: any;
   output_schema: any;
@@ -18,13 +18,13 @@ export interface ReasonerWithNode {
     cache_results: boolean;
   };
   tags?: string[];
-  
+
   // Performance metrics (optional)
   avg_response_time_ms?: number;
   success_rate?: number;
   total_runs?: number;
   last_executed?: string;
-  
+
   // Timestamps
   last_updated: string;
 }

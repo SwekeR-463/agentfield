@@ -1,10 +1,10 @@
 import type { VCStatusSummary } from "../../types/did";
 import { normalizeExecutionStatus } from "../../utils/status";
 import { Badge } from "../ui/badge";
-import { 
-  CheckmarkFilled, 
-  Time, 
-  ErrorFilled, 
+import {
+  CheckmarkFilled,
+  Time,
+  ErrorFilled,
   Document,
   View,
   Download,

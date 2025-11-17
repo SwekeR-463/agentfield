@@ -15,6 +15,7 @@ from agentfield.pydantic_utils import should_convert_args, convert_function_args
 # Test models
 class UserRequest(BaseModel):
     """Test input model."""
+
     user_id: int
     name: str
     email: Optional[str] = None
@@ -22,6 +23,7 @@ class UserRequest(BaseModel):
 
 class UserResponse(BaseModel):
     """Test output model."""
+
     user_id: int
     created: bool
 
@@ -53,11 +55,7 @@ class TestSkillPydanticModels:
 
         # Simulate input from control plane
         input_dict = {
-            "request": {
-                "user_id": 123,
-                "name": "John Doe",
-                "email": "john@example.com"
-            }
+            "request": {"user_id": 123, "name": "John Doe", "email": "john@example.com"}
         }
 
         args, kwargs = convert_function_args(skill_with_model, (), input_dict)
@@ -75,11 +73,7 @@ class TestSkillPydanticModels:
         def skill_with_params(user_id: int, name: str, email: str = None) -> dict:
             return {"user_id": user_id, "name": name}
 
-        input_dict = {
-            "user_id": 456,
-            "name": "Jane Doe",
-            "email": "jane@example.com"
-        }
+        input_dict = {"user_id": 456, "name": "Jane Doe", "email": "jane@example.com"}
 
         args, kwargs = convert_function_args(skill_with_params, (), input_dict)
 
@@ -117,7 +111,9 @@ class TestSkillPydanticModels:
         )
 
         @app.skill()
-        async def create_user(user_id: int, name: str, email: str = None) -> UserResponse:
+        async def create_user(
+            user_id: int, name: str, email: str = None
+        ) -> UserResponse:
             """Skill with plain parameters."""
             return UserResponse(user_id=user_id, created=True)
 
@@ -139,12 +135,7 @@ class TestSkillPydanticModels:
         assert kwargs["request"] is None
 
         # Test with actual model
-        input_dict = {
-            "request": {
-                "user_id": 789,
-                "name": "Test User"
-            }
-        }
+        input_dict = {"request": {"user_id": 789, "name": "Test User"}}
         args, kwargs = convert_function_args(skill_with_optional, (), input_dict)
         assert isinstance(kwargs["request"], UserRequest)
         assert kwargs["request"].user_id == 789

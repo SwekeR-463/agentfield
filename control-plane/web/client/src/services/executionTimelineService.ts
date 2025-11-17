@@ -18,35 +18,35 @@ let timelineCache: {
  */
 async function fetchWrapper<T>(url: string, options?: RequestInit & { timeout?: number }): Promise<T> {
   const { timeout = 8000, ...fetchOptions } = options || {};
-  
+
   // Create AbortController for timeout
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeout);
-  
+
   try {
     const response = await fetch(`${API_BASE_URL}${url}`, {
       ...fetchOptions,
       signal: controller.signal,
     });
-    
+
     clearTimeout(timeoutId);
-    
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({
         message: 'Request failed with status ' + response.status
       }));
-      
+
       throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
     }
-    
+
     return response.json() as Promise<T>;
   } catch (error) {
     clearTimeout(timeoutId);
-    
+
     if (error instanceof Error && error.name === 'AbortError') {
       throw new Error(`Request timeout after ${timeout}ms`);
     }
-    
+
     throw error;
   }
 }
@@ -92,24 +92,24 @@ export async function getExecutionTimelineWithRetry(
   forceRefresh: boolean = false
 ): Promise<ExecutionTimelineResponse> {
   let lastError: Error;
-  
+
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       return await getExecutionTimeline(forceRefresh);
     } catch (error) {
       lastError = error as Error;
-      
+
       // Don't retry on last attempt
       if (attempt === maxRetries) {
         throw lastError;
       }
-      
+
       // Calculate delay with exponential backoff
       const delay = baseDelayMs * Math.pow(2, attempt);
       await new Promise(resolve => setTimeout(resolve, delay));
     }
   }
-  
+
   throw lastError!;
 }
 
@@ -149,11 +149,11 @@ export function isTimelineDataFresh(
   maxAgeMs: number = 300000 // 5 minutes default
 ): boolean {
   if (!data.cache_timestamp) return false;
-  
+
   const cacheTime = new Date(data.cache_timestamp).getTime();
   const now = Date.now();
   const age = now - cacheTime;
-  
+
   return age < maxAgeMs;
 }
 
@@ -162,7 +162,7 @@ export function isTimelineDataFresh(
  */
 export function getTimelineCacheAge(data: ExecutionTimelineResponse): number {
   if (!data.cache_timestamp) return Infinity;
-  
+
   const cacheTime = new Date(data.cache_timestamp).getTime();
   return Date.now() - cacheTime;
 }

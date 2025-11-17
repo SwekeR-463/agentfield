@@ -64,12 +64,12 @@ EOF
 get_current_version() {
     check_jq
     init_version_file
-    
+
     local major=$(jq -r '.major' "$VERSION_FILE")
     local minor=$(jq -r '.minor' "$VERSION_FILE")
     local patch=$(jq -r '.patch' "$VERSION_FILE")
     local alpha_build=$(jq -r '.alpha_build' "$VERSION_FILE")
-    
+
     echo "${major}.${minor}.${patch}-alpha.${alpha_build}"
 }
 
@@ -82,15 +82,15 @@ get_current_version_tag() {
 get_next_version() {
     check_jq
     init_version_file
-    
+
     local major=$(jq -r '.major' "$VERSION_FILE")
     local minor=$(jq -r '.minor' "$VERSION_FILE")
     local patch=$(jq -r '.patch' "$VERSION_FILE")
     local alpha_build=$(jq -r '.alpha_build' "$VERSION_FILE")
-    
+
     # Increment alpha build
     alpha_build=$((alpha_build + 1))
-    
+
     echo "${major}.${minor}.${patch}-alpha.${alpha_build}"
 }
 
@@ -103,25 +103,25 @@ get_next_version_tag() {
 increment_version() {
     check_jq
     init_version_file
-    
+
     local git_commit=""
     if git rev-parse --git-dir > /dev/null 2>&1; then
         git_commit=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
     else
         git_commit="unknown"
     fi
-    
+
     local current_time=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-    
+
     # Read current values
     local major=$(jq -r '.major' "$VERSION_FILE")
     local minor=$(jq -r '.minor' "$VERSION_FILE")
     local patch=$(jq -r '.patch' "$VERSION_FILE")
     local alpha_build=$(jq -r '.alpha_build' "$VERSION_FILE")
-    
+
     # Increment alpha build
     alpha_build=$((alpha_build + 1))
-    
+
     # Update version file
     jq --arg major "$major" \
        --arg minor "$minor" \
@@ -129,14 +129,14 @@ increment_version() {
        --arg alpha_build "$alpha_build" \
        --arg last_release "$current_time" \
        --arg git_commit "$git_commit" \
-       '.major = ($major | tonumber) | 
-        .minor = ($minor | tonumber) | 
-        .patch = ($patch | tonumber) | 
-        .alpha_build = ($alpha_build | tonumber) | 
-        .last_release = $last_release | 
+       '.major = ($major | tonumber) |
+        .minor = ($minor | tonumber) |
+        .patch = ($patch | tonumber) |
+        .alpha_build = ($alpha_build | tonumber) |
+        .last_release = $last_release |
         .git_commit = $git_commit' \
        "$VERSION_FILE" > "$VERSION_FILE.tmp" && mv "$VERSION_FILE.tmp" "$VERSION_FILE"
-    
+
     local new_version="${major}.${minor}.${patch}-alpha.${alpha_build}"
     print_success "Version incremented to: v${new_version}"
     echo "$new_version"
@@ -149,33 +149,33 @@ set_version() {
         print_error "Version string required"
         exit 1
     fi
-    
+
     check_jq
     init_version_file
-    
+
     # Parse version string (e.g., "0.1.0-alpha.5" or "v0.1.0-alpha.5")
     version=$(echo "$version" | sed 's/^v//')  # Remove v prefix if present
-    
+
     if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+-alpha\.[0-9]+$ ]]; then
         print_error "Invalid version format. Expected: major.minor.patch-alpha.build (e.g., 0.1.0-alpha.1)"
         exit 1
     fi
-    
+
     local major=$(echo "$version" | cut -d. -f1)
     local minor=$(echo "$version" | cut -d. -f2)
     local patch_alpha=$(echo "$version" | cut -d. -f3)
     local patch=$(echo "$patch_alpha" | cut -d- -f1)
     local alpha_build=$(echo "$version" | cut -d. -f4)
-    
+
     local git_commit=""
     if git rev-parse --git-dir > /dev/null 2>&1; then
         git_commit=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
     else
         git_commit="unknown"
     fi
-    
+
     local current_time=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-    
+
     # Update version file
     jq --arg major "$major" \
        --arg minor "$minor" \
@@ -183,14 +183,14 @@ set_version() {
        --arg alpha_build "$alpha_build" \
        --arg last_release "$current_time" \
        --arg git_commit "$git_commit" \
-       '.major = ($major | tonumber) | 
-        .minor = ($minor | tonumber) | 
-        .patch = ($patch | tonumber) | 
-        .alpha_build = ($alpha_build | tonumber) | 
-        .last_release = $last_release | 
+       '.major = ($major | tonumber) |
+        .minor = ($minor | tonumber) |
+        .patch = ($patch | tonumber) |
+        .alpha_build = ($alpha_build | tonumber) |
+        .last_release = $last_release |
         .git_commit = $git_commit' \
        "$VERSION_FILE" > "$VERSION_FILE.tmp" && mv "$VERSION_FILE.tmp" "$VERSION_FILE"
-    
+
     print_success "Version set to: v${version}"
     echo "$version"
 }
@@ -199,12 +199,12 @@ set_version() {
 show_version_info() {
     check_jq
     init_version_file
-    
+
     local current_version=$(get_current_version)
     local next_version=$(get_next_version)
     local last_release=$(jq -r '.last_release' "$VERSION_FILE")
     local git_commit=$(jq -r '.git_commit' "$VERSION_FILE")
-    
+
     echo "Current Version: v${current_version}"
     echo "Next Version:    v${next_version}"
     echo "Last Release:    ${last_release:-"Never"}"

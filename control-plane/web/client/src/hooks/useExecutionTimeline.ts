@@ -13,7 +13,7 @@ import {
 
 /**
  * Custom hook for execution timeline data fetching and management
- * 
+ *
  * @param options - Configuration options
  * @returns Object containing execution timeline state and control functions
  */
@@ -58,7 +58,7 @@ export function useExecutionTimeline(options: ExecutionTimelineOptions = {}): Ex
   const isCacheValid = useCallback(() => {
     const cache = cacheRef.current;
     if (!cache.data) return false;
-    
+
     const age = Date.now() - cache.timestamp;
     return age < cacheTtl;
   }, [cacheTtl]);
@@ -132,7 +132,7 @@ export function useExecutionTimeline(options: ExecutionTimelineOptions = {}): Ex
       const data = enableRetry
         ? await getExecutionTimelineWithRetry(maxRetries, 1000, force)
         : await getExecutionTimeline(force);
-      
+
       updateStateFromData(data);
     } catch (error) {
       handleError(error as Error);
@@ -226,12 +226,12 @@ export function useExecutionTimeline(options: ExecutionTimelineOptions = {}): Ex
   return useMemo(() => ({
     // State
     ...state,
-    
+
     // Control functions
     refresh,
     clearError,
     reset,
-    
+
     // Computed properties
     ...computedProperties
   }), [state, refresh, clearError, reset, computedProperties]);

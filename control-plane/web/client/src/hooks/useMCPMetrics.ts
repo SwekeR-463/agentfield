@@ -83,7 +83,7 @@ const PERFORMANCE_THRESHOLDS = {
 
 /**
  * Custom hook for MCP performance metrics monitoring
- * 
+ *
  * @param nodeId - The node ID to monitor
  * @param serverId - Optional server ID (null for node-level metrics)
  * @param options - Configuration options
@@ -134,7 +134,7 @@ export function useMCPMetrics(
   const isCacheValid = useCallback(() => {
     const cache = cacheRef.current;
     if (!cache.data) return false;
-    
+
     const age = Date.now() - cache.timestamp;
     return age < cacheTtl;
   }, [cacheTtl]);
@@ -148,7 +148,7 @@ export function useMCPMetrics(
     // Check for server-level metrics
     if ('avg_response_time_ms' in metrics) {
       const serverMetrics = metrics as MCPServerMetrics;
-      
+
       // Response time alerts
       if (serverMetrics.avg_response_time_ms >= PERFORMANCE_THRESHOLDS.responseTime.error) {
         onPerformanceAlert({
@@ -180,8 +180,8 @@ export function useMCPMetrics(
       }
 
       // Success rate alerts
-      const successRate = serverMetrics.total_requests > 0 
-        ? serverMetrics.successful_requests / serverMetrics.total_requests 
+      const successRate = serverMetrics.total_requests > 0
+        ? serverMetrics.successful_requests / serverMetrics.total_requests
         : 1;
 
       if (successRate <= PERFORMANCE_THRESHOLDS.successRate.error) {
@@ -259,7 +259,7 @@ export function useMCPMetrics(
       updateStateFromResponse(response);
     } catch (error) {
       if (!mountedRef.current) return;
-      
+
       const errorMessage = error instanceof Error ? error.message : 'Failed to fetch metrics';
       setState(prev => ({
         ...prev,
@@ -323,7 +323,7 @@ export function useMCPMetrics(
    */
   const getMetricHistory = useCallback((metricPath: string, limit?: number) => {
     const history = limit ? state.history.slice(0, limit) : state.history;
-    
+
     return history
       .map(point => ({
         timestamp: point.timestamp,
@@ -338,8 +338,8 @@ export function useMCPMetrics(
    */
   const getMetricAverage = useCallback((metricPath: string, timeWindowMs?: number) => {
     const cutoff = timeWindowMs ? new Date(Date.now() - timeWindowMs) : null;
-    
-    const relevantHistory = state.history.filter(point => 
+
+    const relevantHistory = state.history.filter(point =>
       !cutoff || point.timestamp >= cutoff
     );
 
@@ -369,7 +369,7 @@ export function useMCPMetrics(
     const nodeMetrics = state.current as MCPNodeMetrics;
     const serverSummaries: ReturnType<typeof calculatePerformanceMetrics>[] =
       nodeMetrics.servers.map((server) => calculatePerformanceMetrics(server));
-    
+
     return {
       totalServers: nodeMetrics.total_servers,
       activeServers: nodeMetrics.active_servers,
@@ -413,17 +413,17 @@ export function useMCPMetrics(
   return {
     // State
     ...state,
-    
+
     // Control functions
     refresh,
     clearHistory,
-    
+
     // Analysis functions
     getMetricTrend,
     getMetricHistory,
     getMetricAverage,
     getPerformanceSummary,
-    
+
     // Computed properties
     hasData: state.current !== null,
     hasHistory: state.history.length > 0,

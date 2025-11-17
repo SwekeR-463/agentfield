@@ -36,7 +36,7 @@ export function SearchWithFilters({
     const query = inputValue.toLowerCase();
     const filtered = FILTER_SUGGESTIONS.filter(suggestion => {
       // Check if already applied
-      const isApplied = tags.some(tag => 
+      const isApplied = tags.some(tag =>
         tag.type === suggestion.type && tag.value === suggestion.value
       );
       if (isApplied) return false;
@@ -146,12 +146,12 @@ export function SearchWithFilters({
 
           {/* Dropdown indicator */}
           <div className="flex items-center pr-3">
-            <ChevronDown 
-              size={16} 
+            <ChevronDown
+              size={16}
               className={cn(
                 "text-muted-foreground transition-transform duration-200",
                 open && "rotate-180"
-              )} 
+              )}
             />
           </div>
         </div>
@@ -193,7 +193,7 @@ export function SearchWithFilters({
                           {category}
                         </h4>
                       </div>
-                      
+
                       {/* Category items */}
                       <div className="px-2 py-1">
                         {suggestions.map((suggestion) => (

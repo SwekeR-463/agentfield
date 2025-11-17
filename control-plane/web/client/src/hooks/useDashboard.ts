@@ -22,7 +22,7 @@ interface DashboardOptions {
 
 /**
  * Custom hook for dashboard data fetching and management
- * 
+ *
  * @param options - Configuration options
  * @returns Object containing dashboard state and control functions
  */
@@ -67,7 +67,7 @@ export function useDashboard(options: DashboardOptions = {}) {
   const isCacheValid = useCallback(() => {
     const cache = cacheRef.current;
     if (!cache.data) return false;
-    
+
     const age = Date.now() - cache.timestamp;
     return age < cacheTtl;
   }, [cacheTtl]);
@@ -138,10 +138,10 @@ export function useDashboard(options: DashboardOptions = {}) {
     setState(prev => ({ ...prev, loading: true, error: null }));
 
     try {
-      const data = enableRetry 
+      const data = enableRetry
         ? await getDashboardSummaryWithRetry(maxRetries)
         : await getDashboardSummary();
-      
+
       updateStateFromData(data);
     } catch (error) {
       handleError(error as Error);
@@ -217,18 +217,18 @@ export function useDashboard(options: DashboardOptions = {}) {
   return {
     // State
     ...state,
-    
+
     // Control functions
     refresh,
     clearError,
     reset,
-    
+
     // Computed properties
     hasData: state.data !== null,
     hasError: state.error !== null,
     isRefreshing: state.loading && state.data !== null,
     isEmpty: !state.loading && !state.data && !state.error,
-    
+
     // Cache info
     isCached: isCacheValid(),
     cacheAge: state.lastFetch ? Date.now() - state.lastFetch.getTime() : null

@@ -11,13 +11,13 @@
 -- This is the most common query pattern in the workflow summary filtering
 CREATE INDEX IF NOT EXISTS idx_workflow_executions_session_status_time ON workflow_executions(session_id, status, started_at);
 
--- Composite index for actor + status + time queries  
+-- Composite index for actor + status + time queries
 -- Optimizes: SELECT * FROM workflow_executions WHERE actor_id = ? AND status = ? ORDER BY started_at
 -- Used when filtering by actor with status and time ordering
 CREATE INDEX IF NOT EXISTS idx_workflow_executions_actor_status_time ON workflow_executions(actor_id, status, started_at);
 
 -- Composite index for agent + status + time queries
--- Optimizes: SELECT * FROM workflow_executions WHERE agent_node_id = ? AND status = ? ORDER BY started_at  
+-- Optimizes: SELECT * FROM workflow_executions WHERE agent_node_id = ? AND status = ? ORDER BY started_at
 -- Used when filtering by agent with status and time ordering
 CREATE INDEX IF NOT EXISTS idx_workflow_executions_agent_status_time ON workflow_executions(agent_node_id, status, started_at);
 
@@ -33,13 +33,13 @@ CREATE INDEX IF NOT EXISTS idx_workflow_executions_session_time ON workflow_exec
 
 -- Composite index for actor + time queries (without status filter)
 -- Optimizes: SELECT * FROM workflow_executions WHERE actor_id = ? ORDER BY started_at
--- Used when filtering by actor without status constraint  
+-- Used when filtering by actor without status constraint
 CREATE INDEX IF NOT EXISTS idx_workflow_executions_actor_time ON workflow_executions(actor_id, started_at);
 
 -- =============================================================================
 -- QUERY PATTERN OPTIMIZATION SUMMARY
 -- =============================================================================
--- 
+--
 -- These composite indexes are specifically designed to optimize the query patterns
 -- used in the QueryWorkflowExecutions method in storage/local.go:
 --
@@ -48,7 +48,7 @@ CREATE INDEX IF NOT EXISTS idx_workflow_executions_actor_time ON workflow_execut
 --    → Optimized by idx_workflow_executions_session_status_time
 --
 -- 2. Actor-based filtering with status and time ordering:
---    WHERE actor_id = ? AND status = ? ORDER BY started_at  
+--    WHERE actor_id = ? AND status = ? ORDER BY started_at
 --    → Optimized by idx_workflow_executions_actor_status_time
 --
 -- 3. Agent-based filtering with status and time ordering:

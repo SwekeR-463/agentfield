@@ -45,18 +45,18 @@ export function NodesVirtualList({ nodes, searchQuery, isLoading, density = 'com
   // Two-tier categorization: Primary (Running/Offline) + Secondary (Health Details)
   const categorizedNodes = useMemo(() => {
     const now = new Date();
-    
+
     const categorized = nodes.reduce((acc, node) => {
       // Safe date handling - check for null/undefined heartbeat
       const lastHeartbeat = node.last_heartbeat ? new Date(node.last_heartbeat) : null;
       const isValidHeartbeat = lastHeartbeat && !isNaN(lastHeartbeat.getTime());
-      const minutesSinceHeartbeat = isValidHeartbeat 
+      const minutesSinceHeartbeat = isValidHeartbeat
         ? (now.getTime() - lastHeartbeat.getTime()) / (1000 * 60)
         : Infinity;
 
       // Primary categorization based on lifecycle status (what users care about)
       const isRunning = node.lifecycle_status === 'ready' || node.lifecycle_status === 'degraded';
-      
+
       if (isRunning) {
         // Node is running - categorize by health details
         if (node.lifecycle_status === 'degraded') {
@@ -76,9 +76,9 @@ export function NodesVirtualList({ nodes, searchQuery, isLoading, density = 'com
           acc.offline.down.push(node);
         }
       }
-      
+
       return acc;
-    }, { 
+    }, {
       running: {
         fresh: [] as AgentNodeSummary[],
         stale: [] as AgentNodeSummary[],
@@ -96,27 +96,27 @@ export function NodesVirtualList({ nodes, searchQuery, isLoading, density = 'com
       // First by status priority (most critical first)
       const aPriority = getStatusPriority(a.lifecycle_status, a.health_status);
       const bPriority = getStatusPriority(b.lifecycle_status, b.health_status);
-      
+
       if (aPriority !== bPriority) {
         return aPriority - bPriority;
       }
-      
+
       // Then by capability count (descending)
       const aImportance = a.reasoner_count + a.skill_count;
       const bImportance = b.reasoner_count + b.skill_count;
-      
+
       if (aImportance !== bImportance) {
         return bImportance - aImportance;
       }
-      
+
       // Finally by recency (most recent first) - with safe date handling
       const aTime = a.last_heartbeat ? new Date(a.last_heartbeat).getTime() : 0;
       const bTime = b.last_heartbeat ? new Date(b.last_heartbeat).getTime() : 0;
-      
+
       // Handle invalid dates
       const aValidTime = isNaN(aTime) ? 0 : aTime;
       const bValidTime = isNaN(bTime) ? 0 : bTime;
-      
+
       return bValidTime - aValidTime;
     };
 
@@ -209,9 +209,9 @@ export function NodesVirtualList({ nodes, searchQuery, isLoading, density = 'com
     return (
       <div className="space-y-3">
         {allResults.map((node) => (
-          <NodeCard 
-            key={node.id} 
-            nodeSummary={node} 
+          <NodeCard
+            key={node.id}
+            nodeSummary={node}
             searchQuery={searchQuery}
             density={density}
           />

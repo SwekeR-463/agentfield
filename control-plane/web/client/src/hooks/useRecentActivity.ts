@@ -22,7 +22,7 @@ interface RecentActivityOptions {
 
 /**
  * Custom hook for recent activity data fetching and management
- * 
+ *
  * @param options - Configuration options
  * @returns Object containing recent activity state and control functions
  */
@@ -67,7 +67,7 @@ export function useRecentActivity(options: RecentActivityOptions = {}) {
   const isCacheValid = useCallback(() => {
     const cache = cacheRef.current;
     if (!cache.data) return false;
-    
+
     const age = Date.now() - cache.timestamp;
     return age < cacheTtl;
   }, [cacheTtl]);
@@ -138,10 +138,10 @@ export function useRecentActivity(options: RecentActivityOptions = {}) {
     setState(prev => ({ ...prev, loading: true, error: null }));
 
     try {
-      const data = enableRetry 
+      const data = enableRetry
         ? await getRecentActivityWithRetry(maxRetries)
         : await getRecentActivity();
-      
+
       updateStateFromData(data);
     } catch (error) {
       handleError(error as Error);
@@ -217,22 +217,22 @@ export function useRecentActivity(options: RecentActivityOptions = {}) {
   return {
     // State
     ...state,
-    
+
     // Control functions
     refresh,
     clearError,
     reset,
-    
+
     // Computed properties
     hasData: state.data !== null,
     hasError: state.error !== null,
     isRefreshing: state.loading && state.data !== null,
     isEmpty: !state.loading && !state.data && !state.error,
-    
+
     // Cache info
     isCached: isCacheValid(),
     cacheAge: state.lastFetch ? Date.now() - state.lastFetch.getTime() : null,
-    
+
     // Data access helpers
     executions: state.data?.executions || [],
     executionCount: state.data?.executions.length || 0

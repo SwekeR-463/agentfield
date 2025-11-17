@@ -27,7 +27,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_workflow_vcs_workflow_session ON workflow_
 
 -- Create a view for workflow VC chain analysis
 CREATE VIEW IF NOT EXISTS workflow_vc_chain_view AS
-SELECT 
+SELECT
     wvc.workflow_vc_id,
     wvc.workflow_id,
     wvc.session_id,
@@ -41,6 +41,5 @@ SELECT
     AVG(CASE WHEN evc.status = 'completed' THEN 1.0 ELSE 0.0 END) as completion_rate
 FROM workflow_vcs wvc
 LEFT JOIN execution_vcs evc ON JSON_EXTRACT(wvc.component_vc_ids, '$[*]') LIKE '%' || evc.vc_id || '%'
-GROUP BY wvc.workflow_vc_id, wvc.workflow_id, wvc.session_id, wvc.status, 
+GROUP BY wvc.workflow_vc_id, wvc.workflow_id, wvc.session_id, wvc.status,
          wvc.start_time, wvc.end_time, wvc.total_steps, wvc.completed_steps;
-

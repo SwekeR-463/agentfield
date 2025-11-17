@@ -27,6 +27,7 @@ from typing import List, Optional, Sequence, Tuple
 
 # --- Data classes ---------------------------------------------------------
 
+
 @dataclass(frozen=True)
 class AgentNodeDefinition:
     node_id: str
@@ -35,7 +36,7 @@ class AgentNodeDefinition:
     deployment_type: str
     invocation_url: str
     reasoners: Sequence[dict]  # Changed from Sequence[str] to Sequence[dict]
-    skills: Sequence[dict]     # Changed from Sequence[str] to Sequence[dict]
+    skills: Sequence[dict]  # Changed from Sequence[str] to Sequence[dict]
     communication: dict
     health_status: str = "healthy"
     lifecycle_status: str = "active"
@@ -88,8 +89,26 @@ AGENT_NODE_POOL: Tuple[AgentNodeDefinition, ...] = (
         deployment_type="long_running",
         invocation_url="https://agents.internal/atlas-scope/invoke",
         reasoners=(
-            {"id": "Deep Scope Orchestrator", "input_schema": {}, "output_schema": {}, "memory_config": {"auto_inject": [], "memory_retention": "session", "cache_results": False}},
-            {"id": "Context Window Planner", "input_schema": {}, "output_schema": {}, "memory_config": {"auto_inject": [], "memory_retention": "session", "cache_results": False}},
+            {
+                "id": "Deep Scope Orchestrator",
+                "input_schema": {},
+                "output_schema": {},
+                "memory_config": {
+                    "auto_inject": [],
+                    "memory_retention": "session",
+                    "cache_results": False,
+                },
+            },
+            {
+                "id": "Context Window Planner",
+                "input_schema": {},
+                "output_schema": {},
+                "memory_config": {
+                    "auto_inject": [],
+                    "memory_retention": "session",
+                    "cache_results": False,
+                },
+            },
         ),
         skills=(
             {"id": "graph_navigation", "input_schema": {}, "tags": ["navigation"]},
@@ -106,8 +125,26 @@ AGENT_NODE_POOL: Tuple[AgentNodeDefinition, ...] = (
         deployment_type="ephemeral",
         invocation_url="https://agents.internal/source-parser/invoke",
         reasoners=(
-            {"id": "Signal Enrichment Parser", "input_schema": {}, "output_schema": {}, "memory_config": {"auto_inject": [], "memory_retention": "session", "cache_results": False}},
-            {"id": "Evidence Link Resolver", "input_schema": {}, "output_schema": {}, "memory_config": {"auto_inject": [], "memory_retention": "session", "cache_results": False}},
+            {
+                "id": "Signal Enrichment Parser",
+                "input_schema": {},
+                "output_schema": {},
+                "memory_config": {
+                    "auto_inject": [],
+                    "memory_retention": "session",
+                    "cache_results": False,
+                },
+            },
+            {
+                "id": "Evidence Link Resolver",
+                "input_schema": {},
+                "output_schema": {},
+                "memory_config": {
+                    "auto_inject": [],
+                    "memory_retention": "session",
+                    "cache_results": False,
+                },
+            },
         ),
         skills=(
             {"id": "html_extraction", "input_schema": {}, "tags": ["extraction"]},
@@ -125,8 +162,26 @@ AGENT_NODE_POOL: Tuple[AgentNodeDefinition, ...] = (
         deployment_type="long_running",
         invocation_url="https://agents.internal/signal-prioritizer/invoke",
         reasoners=(
-            {"id": "Signal Weighting Pipeline", "input_schema": {}, "output_schema": {}, "memory_config": {"auto_inject": [], "memory_retention": "session", "cache_results": False}},
-            {"id": "Early Warning Ranker", "input_schema": {}, "output_schema": {}, "memory_config": {"auto_inject": [], "memory_retention": "session", "cache_results": False}},
+            {
+                "id": "Signal Weighting Pipeline",
+                "input_schema": {},
+                "output_schema": {},
+                "memory_config": {
+                    "auto_inject": [],
+                    "memory_retention": "session",
+                    "cache_results": False,
+                },
+            },
+            {
+                "id": "Early Warning Ranker",
+                "input_schema": {},
+                "output_schema": {},
+                "memory_config": {
+                    "auto_inject": [],
+                    "memory_retention": "session",
+                    "cache_results": False,
+                },
+            },
         ),
         skills=(
             {"id": "ranking", "input_schema": {}, "tags": ["prioritization"]},
@@ -143,8 +198,26 @@ AGENT_NODE_POOL: Tuple[AgentNodeDefinition, ...] = (
         deployment_type="long_running",
         invocation_url="https://agents.internal/narrative-synth/invoke",
         reasoners=(
-            {"id": "Narrative Multi-Lens Synth", "input_schema": {}, "output_schema": {}, "memory_config": {"auto_inject": [], "memory_retention": "session", "cache_results": False}},
-            {"id": "Cross Lens Summarizer", "input_schema": {}, "output_schema": {}, "memory_config": {"auto_inject": [], "memory_retention": "session", "cache_results": False}},
+            {
+                "id": "Narrative Multi-Lens Synth",
+                "input_schema": {},
+                "output_schema": {},
+                "memory_config": {
+                    "auto_inject": [],
+                    "memory_retention": "session",
+                    "cache_results": False,
+                },
+            },
+            {
+                "id": "Cross Lens Summarizer",
+                "input_schema": {},
+                "output_schema": {},
+                "memory_config": {
+                    "auto_inject": [],
+                    "memory_retention": "session",
+                    "cache_results": False,
+                },
+            },
         ),
         skills=(
             {"id": "summarization", "input_schema": {}, "tags": ["synthesis"]},
@@ -161,8 +234,26 @@ AGENT_NODE_POOL: Tuple[AgentNodeDefinition, ...] = (
         deployment_type="long_running",
         invocation_url="https://agents.internal/risk-modeler/invoke",
         reasoners=(
-            {"id": "Risk Quant Scorer", "input_schema": {}, "output_schema": {}, "memory_config": {"auto_inject": [], "memory_retention": "session", "cache_results": False}},
-            {"id": "Scenario Stress Analyzer", "input_schema": {}, "output_schema": {}, "memory_config": {"auto_inject": [], "memory_retention": "session", "cache_results": False}},
+            {
+                "id": "Risk Quant Scorer",
+                "input_schema": {},
+                "output_schema": {},
+                "memory_config": {
+                    "auto_inject": [],
+                    "memory_retention": "session",
+                    "cache_results": False,
+                },
+            },
+            {
+                "id": "Scenario Stress Analyzer",
+                "input_schema": {},
+                "output_schema": {},
+                "memory_config": {
+                    "auto_inject": [],
+                    "memory_retention": "session",
+                    "cache_results": False,
+                },
+            },
         ),
         skills=(
             {"id": "scenario_planning", "input_schema": {}, "tags": ["planning"]},
@@ -179,8 +270,26 @@ AGENT_NODE_POOL: Tuple[AgentNodeDefinition, ...] = (
         deployment_type="ephemeral",
         invocation_url="https://agents.internal/market-lens/invoke",
         reasoners=(
-            {"id": "Market Vector Indexer", "input_schema": {}, "output_schema": {}, "memory_config": {"auto_inject": [], "memory_retention": "session", "cache_results": False}},
-            {"id": "Capital Flow Mapper", "input_schema": {}, "output_schema": {}, "memory_config": {"auto_inject": [], "memory_retention": "session", "cache_results": False}},
+            {
+                "id": "Market Vector Indexer",
+                "input_schema": {},
+                "output_schema": {},
+                "memory_config": {
+                    "auto_inject": [],
+                    "memory_retention": "session",
+                    "cache_results": False,
+                },
+            },
+            {
+                "id": "Capital Flow Mapper",
+                "input_schema": {},
+                "output_schema": {},
+                "memory_config": {
+                    "auto_inject": [],
+                    "memory_retention": "session",
+                    "cache_results": False,
+                },
+            },
         ),
         skills=(
             {"id": "embedding", "input_schema": {}, "tags": ["vectorization"]},
@@ -197,8 +306,26 @@ AGENT_NODE_POOL: Tuple[AgentNodeDefinition, ...] = (
         deployment_type="long_running",
         invocation_url="https://agents.internal/insight-validation/invoke",
         reasoners=(
-            {"id": "Insight Validation Hub", "input_schema": {}, "output_schema": {}, "memory_config": {"auto_inject": [], "memory_retention": "session", "cache_results": False}},
-            {"id": "Confidence Calibration Board", "input_schema": {}, "output_schema": {}, "memory_config": {"auto_inject": [], "memory_retention": "session", "cache_results": False}},
+            {
+                "id": "Insight Validation Hub",
+                "input_schema": {},
+                "output_schema": {},
+                "memory_config": {
+                    "auto_inject": [],
+                    "memory_retention": "session",
+                    "cache_results": False,
+                },
+            },
+            {
+                "id": "Confidence Calibration Board",
+                "input_schema": {},
+                "output_schema": {},
+                "memory_config": {
+                    "auto_inject": [],
+                    "memory_retention": "session",
+                    "cache_results": False,
+                },
+            },
         ),
         skills=(
             {"id": "source_corrobortion", "input_schema": {}, "tags": ["validation"]},
@@ -210,9 +337,7 @@ AGENT_NODE_POOL: Tuple[AgentNodeDefinition, ...] = (
     ),
 )
 
-STATUS_WEIGHTS = (
-    ("succeeded", 1.0),
-)
+STATUS_WEIGHTS = (("succeeded", 1.0),)
 
 REGIONS = (
     "EU robotics",
@@ -247,6 +372,7 @@ DELIVERABLES = (
 
 
 # --- Helpers --------------------------------------------------------------
+
 
 def parse_args(argv: Sequence[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
@@ -372,9 +498,12 @@ def ensure_agent_nodes(conn: sqlite3.Connection, team_id: str) -> None:
 def purge_workflows_with_prefix(conn: sqlite3.Connection, prefix: str) -> int:
     """Remove existing data for workflows whose IDs share the prefix."""
     pattern = f"{prefix}%"
-    workflow_ids = [row[0] for row in conn.execute(
-        "SELECT workflow_id FROM workflows WHERE workflow_id LIKE ?", (pattern,)
-    )]
+    workflow_ids = [
+        row[0]
+        for row in conn.execute(
+            "SELECT workflow_id FROM workflows WHERE workflow_id LIKE ?", (pattern,)
+        )
+    ]
     removed = 0
     for workflow_id in workflow_ids:
         run_ids = [
@@ -575,7 +704,9 @@ def insert_workflow(
     max_depth = max(n.depth for n in nodes)
     workflow_status = "succeeded" if failed_count == 0 else "failed"
     total_duration_ms = int(
-        (max(n.completed_at for n in nodes) - min(n.started_at for n in nodes)).total_seconds()
+        (
+            max(n.completed_at for n in nodes) - min(n.started_at for n in nodes)
+        ).total_seconds()
         * 1000
     )
     tags_json = json.dumps(scenario.workflow_tags)
@@ -910,7 +1041,8 @@ def seed_database(args: argparse.Namespace) -> List[Tuple[str, str, int]]:
                 session_prefix=args.session_prefix,
                 actor_pool=args.actor_pool,
                 idx=wf_index,
-                started_at=base_start + timedelta(minutes=wf_index * args.stagger_minutes),
+                started_at=base_start
+                + timedelta(minutes=wf_index * args.stagger_minutes),
                 nodes_per_workflow=args.nodes_per_workflow,
             )
             nodes = synthesize_nodes(
@@ -957,9 +1089,7 @@ def main(argv: Sequence[str]) -> int:
         print(
             f"  curl 'http://localhost:8080/api/ui/v1/workflows/{sample_workflow_id}/dag'"
         )
-        print(
-            f"  curl 'http://localhost:8080/api/ui/v2/workflow-runs/{sample_run_id}'"
-        )
+        print(f"  curl 'http://localhost:8080/api/ui/v2/workflow-runs/{sample_run_id}'")
     return 0
 
 

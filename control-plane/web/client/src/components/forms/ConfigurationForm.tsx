@@ -99,7 +99,7 @@ export const ConfigurationForm: React.FC<ConfigurationFormProps> = ({
 
   const handleFieldChange = (fieldName: string, value: any) => {
     setValues(prev => ({ ...prev, [fieldName]: value }));
-    
+
     // Clear field error when user starts typing
     if (errors[fieldName]) {
       setErrors(prev => ({ ...prev, [fieldName]: '' }));
@@ -108,7 +108,7 @@ export const ConfigurationForm: React.FC<ConfigurationFormProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }

@@ -4,7 +4,7 @@ const API_BASE = '/api/ui/v1';
 
 export class ConfigurationApiError extends Error {
   public status?: number;
-  
+
   constructor(message: string, status?: number) {
     super(message);
     this.name = 'ConfigurationApiError';
@@ -14,10 +14,10 @@ export class ConfigurationApiError extends Error {
 
 const fetchWithTimeout = async (url: string, options: RequestInit & { timeout?: number } = {}) => {
   const { timeout = 10000, ...fetchOptions } = options;
-  
+
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeout);
-  
+
   try {
     const response = await fetch(url, {
       ...fetchOptions,
@@ -38,7 +38,7 @@ const handleResponse = async (response: Response) => {
   if (!response.ok) {
     const errorText = await response.text();
     let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
-    
+
     try {
       const errorData = JSON.parse(errorText);
       errorMessage = errorData.error || errorData.message || errorMessage;
@@ -48,10 +48,10 @@ const handleResponse = async (response: Response) => {
         errorMessage = errorText;
       }
     }
-    
+
     throw new ConfigurationApiError(errorMessage, response.status);
   }
-  
+
   return response.json();
 };
 
@@ -127,7 +127,7 @@ export const getAgentConfiguration = async (agentId: string): Promise<AgentConfi
 };
 
 export const setAgentConfiguration = async (
-  agentId: string, 
+  agentId: string,
   configuration: AgentConfiguration
 ): Promise<void> => {
   const response = await fetch(`${API_BASE}/agents/${agentId}/config`, {
@@ -137,7 +137,7 @@ export const setAgentConfiguration = async (
     },
     body: JSON.stringify(configuration),
   });
-  
+
   await handleResponse(response);
 };
 
@@ -147,7 +147,7 @@ export const getAgentPackages = async (search?: string): Promise<AgentPackage[]>
   if (search) {
     url.searchParams.set('search', search);
   }
-  
+
   const response = await fetch(url.toString());
   return handleResponse(response);
 };

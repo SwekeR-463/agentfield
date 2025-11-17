@@ -2,6 +2,7 @@
 Deterministic skills for Agentic RAG
 These are non-AI functions for data processing
 """
+
 import hashlib
 import re
 from typing import List, Dict
@@ -11,7 +12,7 @@ from embedding_manager import get_embedding_manager
 
 def load_document(file_path: str) -> str:
     """Load document from file path"""
-    with open(file_path, 'r', encoding='utf-8') as f:
+    with open(file_path, "r", encoding="utf-8") as f:
         return f.read()
 
 
@@ -21,7 +22,9 @@ def create_chunk_id(text: str, index: int) -> str:
     return f"chunk_{index}_{text_hash}"
 
 
-def simple_chunk_text(text: str, chunk_size: int = 500, overlap: int = 50) -> List[Dict]:
+def simple_chunk_text(
+    text: str, chunk_size: int = 500, overlap: int = 50
+) -> List[Dict]:
     """
     Simple text chunking with overlap
     Returns list of dicts with chunk info
@@ -36,23 +39,21 @@ def simple_chunk_text(text: str, chunk_size: int = 500, overlap: int = 50) -> Li
 
         # Try to break at sentence boundary
         if end < len(text):
-            last_period = chunk_text.rfind('.')
-            last_newline = chunk_text.rfind('\n')
+            last_period = chunk_text.rfind(".")
+            last_newline = chunk_text.rfind("\n")
             break_point = max(last_period, last_newline)
 
             if break_point > chunk_size * 0.5:  # At least 50% of chunk
                 end = start + break_point + 1
                 chunk_text = text[start:end]
 
-        chunks.append({
-            'id': create_chunk_id(chunk_text, index),
-            'text': chunk_text.strip(),
-            'metadata': {
-                'start_char': start,
-                'end_char': end,
-                'index': index
+        chunks.append(
+            {
+                "id": create_chunk_id(chunk_text, index),
+                "text": chunk_text.strip(),
+                "metadata": {"start_char": start, "end_char": end, "index": index},
             }
-        })
+        )
 
         start = end - overlap
         index += 1
@@ -63,14 +64,59 @@ def simple_chunk_text(text: str, chunk_size: int = 500, overlap: int = 50) -> Li
 def extract_keywords(text: str, top_n: int = 10) -> List[str]:
     """Extract key terms from text (simple frequency-based)"""
     # Remove common words
-    stop_words = {'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for',
-                  'of', 'with', 'by', 'from', 'as', 'is', 'was', 'are', 'were', 'be',
-                  'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did', 'will',
-                  'would', 'should', 'could', 'may', 'might', 'must', 'can', 'this',
-                  'that', 'these', 'those', 'i', 'you', 'he', 'she', 'it', 'we', 'they'}
+    stop_words = {
+        "the",
+        "a",
+        "an",
+        "and",
+        "or",
+        "but",
+        "in",
+        "on",
+        "at",
+        "to",
+        "for",
+        "of",
+        "with",
+        "by",
+        "from",
+        "as",
+        "is",
+        "was",
+        "are",
+        "were",
+        "be",
+        "been",
+        "being",
+        "have",
+        "has",
+        "had",
+        "do",
+        "does",
+        "did",
+        "will",
+        "would",
+        "should",
+        "could",
+        "may",
+        "might",
+        "must",
+        "can",
+        "this",
+        "that",
+        "these",
+        "those",
+        "i",
+        "you",
+        "he",
+        "she",
+        "it",
+        "we",
+        "they",
+    }
 
     # Tokenize and count
-    words = re.findall(r'\b[a-z]{3,}\b', text.lower())
+    words = re.findall(r"\b[a-z]{3,}\b", text.lower())
     word_freq = {}
 
     for word in words:
@@ -109,7 +155,7 @@ def find_quote_in_chunk(claim: str, chunk_text: str, min_length: int = 20) -> st
     Returns the most relevant sentence/phrase
     """
     # Split chunk into sentences
-    sentences = re.split(r'[.!?]+', chunk_text)
+    sentences = re.split(r"[.!?]+", chunk_text)
     sentences = [s.strip() for s in sentences if len(s.strip()) > min_length]
 
     if not sentences:
@@ -131,13 +177,15 @@ def find_quote_in_chunk(claim: str, chunk_text: str, min_length: int = 20) -> st
     return best_sentence
 
 
-def deduplicate_chunks(chunks: List[Dict], similarity_threshold: float = 0.9) -> List[Dict]:
+def deduplicate_chunks(
+    chunks: List[Dict], similarity_threshold: float = 0.9
+) -> List[Dict]:
     """Remove duplicate chunks based on text similarity"""
     unique_chunks = []
     seen_texts = set()
 
     for chunk in chunks:
-        text_normalized = ' '.join(chunk['text'].lower().split())
+        text_normalized = " ".join(chunk["text"].lower().split())
 
         # Simple deduplication based on normalized text
         if text_normalized not in seen_texts:
@@ -148,6 +196,7 @@ def deduplicate_chunks(chunks: List[Dict], similarity_threshold: float = 0.9) ->
 
 
 # ============= EMBEDDING FUNCTIONS =============
+
 
 def embed_text(text: str) -> List[float]:
     """
@@ -183,7 +232,7 @@ def rank_by_similarity(
     query_embedding: List[float],
     chunk_embeddings: List[List[float]],
     chunk_ids: List[str],
-    top_k: int = 10
+    top_k: int = 10,
 ) -> List[Dict]:
     """
     Rank chunks by similarity to query
@@ -197,9 +246,9 @@ def rank_by_similarity(
 
     # Combine with chunk IDs and sort
     ranked = [
-        {'chunk_id': chunk_id, 'score': score}
+        {"chunk_id": chunk_id, "score": score}
         for chunk_id, score in zip(chunk_ids, scores)
     ]
-    ranked.sort(key=lambda x: x['score'], reverse=True)
+    ranked.sort(key=lambda x: x["score"], reverse=True)
 
     return ranked[:top_k]

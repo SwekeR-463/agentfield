@@ -131,7 +131,7 @@ export function formatUptime(startedAt: string | undefined): string {
  */
 export function formatResponseTime(timeMs: number | undefined): string {
   if (timeMs === undefined || timeMs === null) return 'N/A';
-  
+
   if (timeMs < 1000) {
     return `${Math.round(timeMs)}ms`;
   } else {
@@ -160,7 +160,7 @@ export function formatErrorRate(rate: number | undefined): string {
  */
 export function formatMemoryUsage(memoryMb: number | undefined): string {
   if (memoryMb === undefined || memoryMb === null) return 'N/A';
-  
+
   if (memoryMb < 1024) {
     return `${Math.round(memoryMb)}MB`;
   } else {
@@ -191,13 +191,13 @@ export function formatTimestamp(timestamp: string | undefined, mode: AppMode = '
     // User-friendly relative time
     if (diffMinutes < 1) return 'Just now';
     if (diffMinutes < 60) return `${diffMinutes}m ago`;
-    
+
     const diffHours = Math.floor(diffMinutes / 60);
     if (diffHours < 24) return `${diffHours}h ago`;
-    
+
     const diffDays = Math.floor(diffHours / 24);
     if (diffDays < 7) return `${diffDays}d ago`;
-    
+
     return date.toLocaleDateString();
   } else {
     // Developer mode - more precise
@@ -243,10 +243,10 @@ export function formatErrorMessage(
     if (error.includes('not found')) return 'Service not found';
     if (error.includes('permission denied')) return 'Access denied';
     if (error.includes('invalid')) return 'Invalid request';
-    
+
     // Return first sentence for other errors
     const firstSentence = error.split('.')[0];
-    return firstSentence.length > 100 
+    return firstSentence.length > 100
       ? firstSentence.substring(0, 100) + '...'
       : firstSentence;
   }
@@ -259,8 +259,8 @@ export function formatErrorMessage(
  * Calculate performance metrics from server metrics
  */
 export function calculatePerformanceMetrics(metrics: MCPServerMetrics) {
-  const successRate = metrics.total_requests > 0 
-    ? metrics.successful_requests / metrics.total_requests 
+  const successRate = metrics.total_requests > 0
+    ? metrics.successful_requests / metrics.total_requests
     : 0;
 
   const errorRate = metrics.total_requests > 0
@@ -285,7 +285,7 @@ export function serverNeedsAttention(server: MCPServerHealthForUI): boolean {
   if (server.error_message) return true;
   if (server.success_rate !== undefined && server.success_rate < 0.9) return true;
   if (server.avg_response_time_ms !== undefined && server.avg_response_time_ms > 5000) return true;
-  
+
   return false;
 }
 
@@ -297,13 +297,13 @@ export function sortServersByPriority(servers: MCPServerHealthForUI[]): MCPServe
     // Error status first
     if (a.status === 'error' && b.status !== 'error') return -1;
     if (b.status === 'error' && a.status !== 'error') return 1;
-    
+
     // Then by attention needed
     const aNeeds = serverNeedsAttention(a);
     const bNeeds = serverNeedsAttention(b);
     if (aNeeds && !bNeeds) return -1;
     if (bNeeds && !aNeeds) return 1;
-    
+
     // Then by status priority
     const statusPriority: Record<MCPServerStatus, number> = {
       error: 0,
@@ -315,7 +315,7 @@ export function sortServersByPriority(servers: MCPServerHealthForUI[]): MCPServe
     const aPriority = statusPriority[a.status] ?? 4;
     const bPriority = statusPriority[b.status] ?? 4;
     if (aPriority !== bPriority) return aPriority - bPriority;
-    
+
     // Finally by name
     return a.alias.localeCompare(b.alias);
   });
@@ -351,7 +351,7 @@ export function validateToolParameters(
   schema: any
 ): { valid: boolean; errors: string[] } {
   const errors: string[] = [];
-  
+
   if (!schema || !schema.properties) {
     return { valid: true, errors: [] };
   }
@@ -375,7 +375,7 @@ export function validateToolParameters(
         errors.push(`Field '${key}' must be a number`);
       }
     }
-    
+
     if (fieldSchema.type === 'boolean' && typeof value !== 'boolean') {
       if (value !== 'true' && value !== 'false') {
         errors.push(`Field '${key}' must be a boolean`);

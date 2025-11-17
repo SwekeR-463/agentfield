@@ -287,9 +287,13 @@ async def test_scoped_client_delegates(memory_client):
     base.exists.assert_awaited_once_with("key", scope="session")
     base.delete.assert_awaited_once_with("key", scope="session")
     base.list_keys.assert_awaited_once_with("session")
-    base.set_vector.assert_awaited_once_with("chunk", [0.1], metadata=None, scope="session")
+    base.set_vector.assert_awaited_once_with(
+        "chunk", [0.1], metadata=None, scope="session"
+    )
     base.delete_vector.assert_awaited_once_with("chunk", scope="session")
-    base.similarity_search.assert_awaited_once_with([0.2], top_k=10, scope="session", filters=None)
+    base.similarity_search.assert_awaited_once_with(
+        [0.2], top_k=10, scope="session", filters=None
+    )
 
 
 @pytest.mark.unit
@@ -321,9 +325,13 @@ async def test_global_client_delegates(memory_client):
     base.exists.assert_awaited_once_with("key", scope="global")
     base.delete.assert_awaited_once_with("key", scope="global")
     base.list_keys.assert_awaited_once_with("global")
-    base.set_vector.assert_awaited_once_with("chunk", [0.2], metadata=None, scope="global")
+    base.set_vector.assert_awaited_once_with(
+        "chunk", [0.2], metadata=None, scope="global"
+    )
     base.delete_vector.assert_awaited_once_with("chunk", scope="global")
-    base.similarity_search.assert_awaited_once_with([0.3], top_k=10, scope="global", filters=None)
+    base.similarity_search.assert_awaited_once_with(
+        [0.3], top_k=10, scope="global", filters=None
+    )
 
 
 @pytest.mark.unit

@@ -183,9 +183,7 @@ async def qa_answer(
             f"merged to {len(merged_results)} total"
         )
 
-        answer = await synthesize_answer(
-            question, merged_results, is_refinement=True
-        )
+        answer = await synthesize_answer(question, merged_results, is_refinement=True)
 
         log_info(
             f"[qa_answer] Refined synthesis: confidence={answer.confidence}, "

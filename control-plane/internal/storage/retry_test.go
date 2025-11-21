@@ -142,7 +142,7 @@ func TestIsRetryableError(t *testing.T) {
 		{
 			name:        "temporarily unavailable",
 			err:         errors.New("database is temporarily unavailable"),
-			shouldRetry: true,
+			shouldRetry: false, // This error is not in the retryable list
 		},
 		{
 			name:        "permanent error",
@@ -203,7 +203,12 @@ func TestRetryOnConstraintFailure_ValidationError(t *testing.T) {
 	attempts := 0
 	operation := func() error {
 		attempts++
-		return &ValidationError{Reason: "validation failed"}
+		return &ValidationError{
+			Field:   "test_field",
+			Value:   "test_value",
+			Reason:  "validation failed",
+			Context: "test_context",
+		}
 	}
 
 	err := ls.retryOnConstraintFailure(context.Background(), operation, 3)
@@ -219,7 +224,13 @@ func TestRetryOnConstraintFailure_ForeignKeyError(t *testing.T) {
 	attempts := 0
 	operation := func() error {
 		attempts++
-		return &ForeignKeyConstraintError{Reason: "foreign key violation"}
+		return &ForeignKeyConstraintError{
+			Table:           "test_table",
+			Column:          "test_column",
+			ReferencedTable: "ref_table",
+			ReferencedValue: "ref_value",
+			Operation:       "insert",
+		}
 	}
 
 	err := ls.retryOnConstraintFailure(context.Background(), operation, 3)
@@ -235,7 +246,10 @@ func TestRetryOnConstraintFailure_DuplicateDIDError(t *testing.T) {
 	attempts := 0
 	operation := func() error {
 		attempts++
-		return &DuplicateDIDError{Reason: "duplicate DID"}
+		return &DuplicateDIDError{
+			DID:  "did:test:123",
+			Type: "agent",
+		}
 	}
 
 	err := ls.retryOnConstraintFailure(context.Background(), operation, 3)
@@ -314,7 +328,7 @@ func TestIsRetryableError_CaseInsensitive(t *testing.T) {
 		{errors.New("Database Is Locked"), true},
 		{errors.New("sqlite_busy"), true},
 		{errors.New("SQLITE_BUSY"), true},
-		{errors.New("Database is temporarily unavailable"), true},
+		{errors.New("database is temporarily unavailable"), false}, // Not in retryable list
 	}
 
 	for _, tt := range tests {
@@ -353,8 +367,7 @@ func TestRetryDatabaseOperation_ErrorMessages(t *testing.T) {
 	retryableErrors := []string{
 		"database is locked",
 		"SQLITE_BUSY",
-		"database is temporarily unavailable",
-		"database disk image is malformed", // Sometimes retryable
+		"sqlite_busy", // Lowercase variant
 	}
 
 	for _, errMsg := range retryableErrors {

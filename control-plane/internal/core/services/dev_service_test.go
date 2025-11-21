@@ -202,17 +202,19 @@ func TestGetFreePort_NoPortAvailable(t *testing.T) {
 	portManager := newMockPortManager()
 	fileSystem := newMockFileSystemAdapter()
 
-	service := NewDevService(processManager, portManager, fileSystem).(*DefaultDevService)
-
-	// Mock port manager to return error
+	// Mock port manager to return error BEFORE creating service
 	portManager.findFreePortFunc = func(startPort int) (int, error) {
 		return 0, errors.New("no free port available")
 	}
 
+	service := NewDevService(processManager, portManager, fileSystem).(*DefaultDevService)
+
 	port, err := service.getFreePort()
 	assert.Error(t, err)
 	assert.Equal(t, 0, port)
-	assert.Contains(t, err.Error(), "no free port available")
+	if err != nil {
+		assert.Contains(t, err.Error(), "no free port available")
+	}
 }
 
 func TestIsPortAvailable_Available(t *testing.T) {

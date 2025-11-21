@@ -36,6 +36,15 @@ class DummyAIConfig:
         self.audio_model = "tts-1"
         self.vision_model = "dall-e-3"
 
+    def copy(self, deep=False):
+        """Create a copy of the config."""
+        import copy as copy_module
+
+        if deep:
+            return copy_module.deepcopy(self)
+        else:
+            return copy_module.copy(self)
+
     async def get_model_limits(self, model=None):
         return {"context_length": 1000, "max_output_tokens": 100}
 

@@ -112,6 +112,11 @@ class AgentRouter:
         agent = self._require_agent()
         return agent.memory
 
+    @property
+    def app(self) -> "Agent":
+        """Access the underlying Agent instance."""
+        return self._require_agent()
+
     # ------------------------------------------------------------------
     # Internal helpers
     def _require_agent(self) -> "Agent":

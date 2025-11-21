@@ -1,6 +1,7 @@
 package process
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -94,9 +95,11 @@ func (pm *DefaultProcessManager) Stop(pid int) error {
 
 	// Try graceful termination first (SIGTERM)
 	if err := cmd.Process.Signal(syscall.SIGTERM); err != nil {
-		// If SIGTERM fails, try forceful termination (SIGKILL)
-		if killErr := cmd.Process.Kill(); killErr != nil {
-			return fmt.Errorf("failed to terminate process %d: SIGTERM failed (%v), SIGKILL failed (%v)", pid, err, killErr)
+		if !errors.Is(err, os.ErrProcessDone) {
+			// If SIGTERM fails, try forceful termination (SIGKILL)
+			if killErr := cmd.Process.Kill(); killErr != nil && !errors.Is(killErr, os.ErrProcessDone) {
+				return fmt.Errorf("failed to terminate process %d: SIGTERM failed (%v), SIGKILL failed (%v)", pid, err, killErr)
+			}
 		}
 	}
 

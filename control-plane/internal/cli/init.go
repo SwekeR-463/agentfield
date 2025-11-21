@@ -218,7 +218,7 @@ Example:
   af init my-agent --defaults # Use defaults with no prompts
   af init my-agent -l go --author "John Doe" --email "john@example.com"`,
 		Args: cobra.MaximumNArgs(1),
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			var projectName string
 
 			if useDefaults {
@@ -241,7 +241,7 @@ Example:
 					fmt.Println("  ✓ my-agent")
 					fmt.Println("  ✓ user_analytics")
 					fmt.Println("  ✓ support-team")
-					os.Exit(1)
+					return fmt.Errorf("invalid project name")
 				}
 			}
 
@@ -263,7 +263,7 @@ Example:
 				finalModel, err := p.Run()
 				if err != nil {
 					printError("Error running interactive prompt: %v", err)
-					os.Exit(1)
+					return fmt.Errorf("error running interactive prompt: %w", err)
 				}
 
 				m := finalModel.(initModel)
@@ -289,7 +289,7 @@ Example:
 			if !isSupported {
 				printError("Unsupported language: %s", language)
 				fmt.Printf("Supported languages: %s\n", strings.Join(supportedLangs, ", "))
-				os.Exit(1)
+				return fmt.Errorf("unsupported language: %s", language)
 			}
 
 			// Get author info from flags or git config
@@ -325,14 +325,14 @@ Example:
 			projectPath := filepath.Join(".", projectName)
 			if err := os.MkdirAll(projectPath, 0o755); err != nil {
 				printError("Error creating project directory: %v", err)
-				os.Exit(1)
+				return fmt.Errorf("error creating project directory: %w", err)
 			}
 
 			// Get template files for the selected language
 			templateFiles, err := templates.GetTemplateFiles(language)
 			if err != nil {
 				printError("Error getting template files: %v", err)
-				os.Exit(1)
+				return fmt.Errorf("error getting template files: %w", err)
 			}
 
 			// Generate files
@@ -341,24 +341,24 @@ Example:
 				tmpl, err := templates.GetTemplate(tmplPath)
 				if err != nil {
 					printError("Error parsing template %s: %v", tmplPath, err)
-					os.Exit(1)
+					return fmt.Errorf("error parsing template %s: %w", tmplPath, err)
 				}
 
 				var buf strings.Builder
 				if err := tmpl.Execute(&buf, data); err != nil {
 					printError("Error executing template %s: %v", tmplPath, err)
-					os.Exit(1)
+					return fmt.Errorf("error executing template %s: %w", tmplPath, err)
 				}
 
 				fullDestPath := filepath.Join(projectPath, destPath)
 				if err := os.MkdirAll(filepath.Dir(fullDestPath), 0o755); err != nil {
 					printError("Error creating directory for %s: %v", fullDestPath, err)
-					os.Exit(1)
+					return fmt.Errorf("error creating directory for %s: %w", fullDestPath, err)
 				}
 
 				if err := os.WriteFile(fullDestPath, []byte(buf.String()), 0o644); err != nil {
 					printError("Error writing file %s: %v", fullDestPath, err)
-					os.Exit(1)
+					return fmt.Errorf("error writing file %s: %w", fullDestPath, err)
 				}
 
 				printSuccess("  ✓ %s", destPath)
@@ -411,6 +411,8 @@ Example:
 			printInfo("Learn more: https://docs.agentfield.ai")
 			fmt.Println()
 			printSuccess("Happy building! 🎉")
+
+			return nil
 		},
 	}
 

@@ -998,6 +998,9 @@ func determineTargetType(agent *types.AgentNode, name string) (string, error) {
 }
 
 func buildAgentURL(agent *types.AgentNode, target *parsedTarget) string {
+	if agent == nil {
+		return ""
+	}
 	if agent.DeploymentType == "serverless" && agent.InvocationURL != nil && *agent.InvocationURL != "" {
 		return *agent.InvocationURL
 	}

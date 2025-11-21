@@ -156,6 +156,16 @@ func (ds *DefaultDevService) runDev(packagePath string, options domain.DevOption
 //
 //nolint:unused // retained for future dev-service enhancements
 func (ds *DefaultDevService) getFreePort() (int, error) {
+	// Use port manager if available, otherwise fall back to direct check
+	if ds.portManager != nil {
+		port, err := ds.portManager.FindFreePort(8001)
+		if err != nil {
+			return 0, fmt.Errorf("no free port available: %w", err)
+		}
+		return port, nil
+	}
+
+	// Fallback: direct port checking
 	for port := 8001; port <= 8999; port++ {
 		if ds.isPortAvailable(port) {
 			return port, nil
@@ -168,6 +178,12 @@ func (ds *DefaultDevService) getFreePort() (int, error) {
 //
 //nolint:unused // retained for future dev-service enhancements
 func (ds *DefaultDevService) isPortAvailable(port int) bool {
+	// Use port manager if available, otherwise fall back to direct check
+	if ds.portManager != nil {
+		return ds.portManager.IsPortAvailable(port)
+	}
+
+	// Fallback: direct port checking
 	conn, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
 		return false

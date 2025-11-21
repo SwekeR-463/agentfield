@@ -181,7 +181,7 @@ func ExecuteReasonerHandler(storageProvider storage.StorageProvider) gin.Handler
 
 		// Prepare request to agent node with workflow context propagation
 		agentURL := fmt.Sprintf("%s/reasoners/%s", targetNode.BaseURL, reasonerName)
-		agentReq, err := http.NewRequest(http.MethodPost, agentURL, bytes.NewBuffer(inputJSON))
+		agentReq, err := http.NewRequestWithContext(ctx, http.MethodPost, agentURL, bytes.NewBuffer(inputJSON))
 		if err != nil {
 			workflowExecution.Status = types.ExecutionStatusFailed
 			errorMessage := fmt.Sprintf("failed to create agent request: %v", err)
@@ -465,7 +465,7 @@ func ExecuteSkillHandler(storageProvider storage.StorageProvider) gin.HandlerFun
 
 		// Prepare request to agent node with workflow context propagation
 		agentURL := fmt.Sprintf("%s/skills/%s", targetNode.BaseURL, skillName)
-		agentReq, err := http.NewRequest(http.MethodPost, agentURL, bytes.NewBuffer(inputJSON))
+		agentReq, err := http.NewRequestWithContext(ctx, http.MethodPost, agentURL, bytes.NewBuffer(inputJSON))
 		if err != nil {
 			workflowExecution.Status = types.ExecutionStatusFailed
 			errorMessage := fmt.Sprintf("failed to create agent request: %v", err)

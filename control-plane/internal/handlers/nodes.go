@@ -60,7 +60,10 @@ func validateCallbackURL(baseURL string) error {
 	}
 
 	healthURL := strings.TrimSuffix(baseURL, "/") + "/health"
-	req, err := http.NewRequest("GET", healthURL, nil)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(ctx, "GET", healthURL, nil)
 	if err != nil {
 		return fmt.Errorf("failed to create health check request: %w", err)
 	}
@@ -1156,7 +1159,20 @@ func RegisterServerlessAgentHandler(storageProvider storage.StorageProvider, uiS
 			Timeout: 10 * time.Second,
 		}
 
-		resp, err := client.Get(discoveryURL)
+		discoveryCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
+		defer cancel()
+
+		discoveryReq, err := http.NewRequestWithContext(discoveryCtx, "GET", discoveryURL, nil)
+		if err != nil {
+			logger.Logger.Error().Err(err).Msgf("❌ Failed to create discovery request: %s", discoveryURL)
+			c.JSON(http.StatusBadGateway, gin.H{
+				"error":   "Failed to discover serverless agent",
+				"details": fmt.Sprintf("Could not create discovery request: %v", err),
+			})
+			return
+		}
+
+		resp, err := client.Do(discoveryReq)
 		if err != nil {
 			logger.Logger.Error().Err(err).Msgf("❌ Failed to call discovery endpoint: %s", discoveryURL)
 			c.JSON(http.StatusBadGateway, gin.H{

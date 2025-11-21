@@ -2,7 +2,6 @@ package cli
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/Agent-Field/agentfield/control-plane/internal/packages"
 	"github.com/spf13/cobra"
@@ -29,7 +28,7 @@ Examples:
   agentfield uninstall my-agent
   agentfield uninstall sentiment-analyzer --force`,
 		Args: cobra.ExactArgs(1),
-		Run:  runUninstallCommand,
+		RunE: runUninstallCommand,
 	}
 
 	cmd.Flags().BoolVarP(&uninstallForce, "force", "f", false, "Force uninstall even if agent node is running")
@@ -37,7 +36,7 @@ Examples:
 	return cmd
 }
 
-func runUninstallCommand(cmd *cobra.Command, args []string) {
+func runUninstallCommand(cmd *cobra.Command, args []string) error {
 	packageName := args[0]
 
 	// Create uninstaller
@@ -48,7 +47,8 @@ func runUninstallCommand(cmd *cobra.Command, args []string) {
 
 	// Uninstall package
 	if err := uninstaller.UninstallPackage(packageName); err != nil {
-		fmt.Printf("❌ Uninstallation failed: %v\n", err)
-		os.Exit(1)
+		return fmt.Errorf("uninstallation failed: %w", err)
 	}
+
+	return nil
 }

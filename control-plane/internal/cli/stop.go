@@ -29,13 +29,13 @@ Examples:
   af stop email-helper
   af stop data-analyzer`,
 		Args: cobra.ExactArgs(1),
-		Run:  runStopCommand,
+		RunE: runStopCommand,
 	}
 
 	return cmd
 }
 
-func runStopCommand(cmd *cobra.Command, args []string) {
+func runStopCommand(cmd *cobra.Command, args []string) error {
 	agentNodeName := args[0]
 
 	stopper := &AgentNodeStopper{
@@ -43,9 +43,10 @@ func runStopCommand(cmd *cobra.Command, args []string) {
 	}
 
 	if err := stopper.StopAgentNode(agentNodeName); err != nil {
-		fmt.Printf("❌ Failed to stop agent node: %v\n", err)
-		os.Exit(1)
+		return fmt.Errorf("failed to stop agent node: %w", err)
 	}
+
+	return nil
 }
 
 // AgentNodeStopper handles stopping agent nodes

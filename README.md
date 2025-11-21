@@ -29,6 +29,12 @@
 
 It is an open-source **Control Plane** that treats AI agents as first-class citizens. Instead of building fragile, monolithic scripts, AgentField lets you deploy agents as **independent microservices** that can discover each other, coordinate complex workflows, and scale infinitely—all with built-in observability and cryptographic trust.
 
+### The "Day 2" Problem
+Most frameworks help you *prototype* (Day 1). AgentField helps you *operate* (Day 2).
+*   **How do I debug a loop?** (Observability)
+*   **How do I prove what the agent did?** (Verifiable Credentials)
+*   **How do I scale to 10k concurrent runs?** (Stateless Architecture)
+*   **How do I manage tools?** (MCP Support)
 
 Write standard Python (or Go). Get a production-grade distributed system automatically.
 
@@ -159,6 +165,10 @@ AgentField isn't a framework you extend. It's **infrastructure** that solves the
 *   **Metrics:** Prometheus endpoints at `/metrics`.
 *   **Logs:** Structured, correlated logs.
 
+### 🔌 Model Context Protocol (MCP)
+*   **Universal Connectivity:** Connect any MCP-compliant tool (Stripe, Slack, PostgreSQL) instantly.
+*   **Standard Interface:** Stop writing custom tool wrappers. Use the ecosystem.
+
 ---
 
 ## 🔌 Interoperability
@@ -192,6 +202,7 @@ const result = await response.json();
 *   You need **independent deployment** (multiple teams).
 *   You need **compliance/audit trails**.
 *   You want **production infrastructure** (Queues, Retries, APIs).
+*   You want to use **MCP tools** without hassle.
 
 ### ❌ NO if:
 *   You are building a **single-agent chatbot**.

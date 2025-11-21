@@ -31,7 +31,7 @@ Examples:
   af logs email-helper
   af logs data-analyzer --follow`,
 		Args: cobra.ExactArgs(1),
-		Run:  runLogsCommand,
+		RunE: runLogsCommand,
 	}
 
 	cmd.Flags().BoolVarP(&logsFollow, "follow", "f", false, "Follow log output")
@@ -40,7 +40,7 @@ Examples:
 	return cmd
 }
 
-func runLogsCommand(cmd *cobra.Command, args []string) {
+func runLogsCommand(cmd *cobra.Command, args []string) error {
 	agentNodeName := args[0]
 
 	logViewer := &LogViewer{
@@ -51,8 +51,10 @@ func runLogsCommand(cmd *cobra.Command, args []string) {
 
 	if err := logViewer.ViewLogs(agentNodeName); err != nil {
 		logger.Logger.Error().Err(err).Msg("Failed to view logs")
-		os.Exit(1)
+		return fmt.Errorf("failed to view logs: %w", err)
 	}
+
+	return nil
 }
 
 // LogViewer handles viewing agent node logs

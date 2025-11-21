@@ -288,12 +288,20 @@ func buildExecutionDAG(executions []*types.Execution) (WorkflowDAGNode, []Workfl
 	}
 
 	var maxDepth int
+	visited := make(map[string]bool)
 	var buildNode func(exec *types.Execution, depth int) WorkflowDAGNode
 
 	buildNode = func(exec *types.Execution, depth int) WorkflowDAGNode {
 		if exec == nil {
 			return WorkflowDAGNode{}
 		}
+
+		// Cycle detection: if we've already visited this execution, return empty node
+		if visited[exec.ExecutionID] {
+			return WorkflowDAGNode{}
+		}
+		visited[exec.ExecutionID] = true
+		defer delete(visited, exec.ExecutionID)
 
 		node := executionToDAGNode(exec, depth)
 		if depth > maxDepth {
@@ -315,6 +323,7 @@ func buildExecutionDAG(executions []*types.Execution) (WorkflowDAGNode, []Workfl
 
 	// Compute depth for each execution (same logic as lightweight DAG)
 	depthCache := make(map[string]int, len(executions))
+	computing := make(map[string]bool) // Track executions currently being computed to detect cycles
 	var computeDepth func(exec *types.Execution) int
 	computeDepth = func(exec *types.Execution) int {
 		if exec == nil {
@@ -323,6 +332,13 @@ func buildExecutionDAG(executions []*types.Execution) (WorkflowDAGNode, []Workfl
 		if depth, ok := depthCache[exec.ExecutionID]; ok {
 			return depth
 		}
+		// Cycle detection: if we're already computing this execution, return 0 to break the cycle
+		if computing[exec.ExecutionID] {
+			return 0
+		}
+		computing[exec.ExecutionID] = true
+		defer delete(computing, exec.ExecutionID)
+
 		depth := 0
 		if exec.ParentExecutionID != nil && *exec.ParentExecutionID != "" {
 			if parent, ok := execMap[*exec.ParentExecutionID]; ok {
@@ -382,6 +398,7 @@ func buildLightweightExecutionDAG(executions []*types.Execution) ([]WorkflowDAGL
 	}
 
 	depthCache := make(map[string]int, len(executions))
+	computing := make(map[string]bool) // Track executions currently being computed to detect cycles
 	var maxDepth int
 
 	var computeDepth func(exec *types.Execution) int
@@ -393,6 +410,13 @@ func buildLightweightExecutionDAG(executions []*types.Execution) ([]WorkflowDAGL
 		if depth, ok := depthCache[exec.ExecutionID]; ok {
 			return depth
 		}
+
+		// Cycle detection: if we're already computing this execution, return 0 to break the cycle
+		if computing[exec.ExecutionID] {
+			return 0
+		}
+		computing[exec.ExecutionID] = true
+		defer delete(computing, exec.ExecutionID)
 
 		depth := 0
 		if exec.ParentExecutionID != nil && *exec.ParentExecutionID != "" {
@@ -473,17 +497,22 @@ func executionToDAGNode(exec *types.Execution, depth int) WorkflowDAGNode {
 
 func deriveOverallStatus(executions []*types.Execution) string {
 	hasRunning := false
+	hasFailed := false
 	for _, exec := range executions {
 		status := types.NormalizeExecutionStatus(exec.Status)
 		switch status {
-		case string(types.ExecutionStatusFailed):
-			return string(types.ExecutionStatusFailed)
 		case string(types.ExecutionStatusRunning), string(types.ExecutionStatusPending), string(types.ExecutionStatusQueued):
 			hasRunning = true
+		case string(types.ExecutionStatusFailed):
+			hasFailed = true
 		}
 	}
+	// Priority: running > failed > succeeded
 	if hasRunning {
 		return string(types.ExecutionStatusRunning)
+	}
+	if hasFailed {
+		return string(types.ExecutionStatusFailed)
 	}
 	return string(types.ExecutionStatusSucceeded)
 }

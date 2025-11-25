@@ -23,4 +23,12 @@ describe('Agent', () => {
     expect(agent.reasoners.all().map((r) => r.name)).toContain('simulation/run');
     expect(agent.skills.all().map((s) => s.name)).toContain('simulation/format');
   });
+
+  it('calls local reasoner via agent.call when target matches node id', async () => {
+    const agent = new Agent({ nodeId: 'local', devMode: true });
+    agent.reasoner('echo', async (ctx) => ({ echo: ctx.input.msg }));
+
+    const result = await agent.call('local.echo', { msg: 'hi' });
+    expect(result).toEqual({ echo: 'hi' });
+  });
 });

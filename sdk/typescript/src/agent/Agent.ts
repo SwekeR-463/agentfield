@@ -23,6 +23,7 @@ export class Agent {
   readonly reasoners = new ReasonerRegistry();
   readonly skills = new SkillRegistry();
   private server?: http.Server;
+  private heartbeatTimer?: NodeJS.Timeout;
   private readonly aiClient: AIClient;
   private readonly agentFieldClient: AgentFieldClient;
   private readonly memoryClient: MemoryClient;
@@ -97,9 +98,13 @@ export class Agent {
       this.server = this.app.listen(this.config.port, () => resolve());
     });
     this.memoryEventClient.start();
+    this.startHeartbeat();
   }
 
   async shutdown(): Promise<void> {
+    if (this.heartbeatTimer) {
+      clearInterval(this.heartbeatTimer);
+    }
     await new Promise<void>((resolve, reject) => {
       this.server?.close((err) => {
         if (err) reject(err);
@@ -152,8 +157,7 @@ export class Agent {
       );
     }
 
-    // TODO: call remote agent through control plane
-    throw new Error(`Remote agent calls are not implemented (target: ${target})`);
+    return this.agentFieldClient.execute(target, input);
   }
 
   private registerDefaultRoutes() {
@@ -279,6 +283,24 @@ export class Agent {
       }
       console.warn('Control plane registration failed (devMode=true), continuing locally', err);
     }
+  }
+
+  private startHeartbeat() {
+    const interval = this.config.heartbeatIntervalMs ?? 30_000;
+    if (interval <= 0) return;
+
+    const tick = async () => {
+      try {
+        await this.agentFieldClient.heartbeat();
+      } catch (err) {
+        if (!this.config.devMode) {
+          console.warn('Heartbeat failed', err);
+        }
+      }
+    };
+
+    this.heartbeatTimer = setInterval(tick, interval);
+    tick();
   }
 
   private health(): HealthStatus {

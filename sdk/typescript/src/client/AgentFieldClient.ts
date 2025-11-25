@@ -27,4 +27,11 @@ export class AgentFieldClient {
     });
     return res.data as HealthStatus;
   }
+
+  async execute<T = any>(target: string, input: any): Promise<T> {
+    const res = await this.http.post(`/api/v1/execute/${target}`, {
+      input
+    });
+    return (res.data?.result as T) ?? res.data;
+  }
 }

@@ -13,6 +13,7 @@ export interface AgentConfig {
   memoryConfig?: MemoryConfig;
   didEnabled?: boolean;
   devMode?: boolean;
+  heartbeatIntervalMs?: number;
 }
 
 export interface AIConfig {

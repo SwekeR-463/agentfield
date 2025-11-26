@@ -39,7 +39,7 @@ Most frameworks help you *prototype* (Day 1). AgentField helps you *operate* (Da
 *   **How do I manage IAM for agents ?** (Identity)
 *   **How do I integrate it with my backend/frontend ?** (websockets/SSE/webhooks)
 
-Write standard Python (or Go). Get a production-grade distributed system automatically.
+Write standard Python (or Go/tsx). Get a production-grade distributed system automatically.
 
 ```python
 from agentfield import Agent, AIConfig

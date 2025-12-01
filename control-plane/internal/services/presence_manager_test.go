@@ -1,12 +1,15 @@
 package services
 
 import (
+	"context"
 	"sync"
 	"testing"
 	"time"
 
 	"github.com/Agent-Field/agentfield/control-plane/internal/storage"
+	"github.com/Agent-Field/agentfield/control-plane/pkg/types"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -263,4 +266,120 @@ func TestPresenceManager_MultipleNodes(t *testing.T) {
 	require.False(t, pm.HasLease("node-2"))
 	require.True(t, pm.HasLease("node-1"))
 	require.True(t, pm.HasLease("node-3"))
+}
+
+func TestPresenceManager_RecoverFromDatabase_NoNodes(t *testing.T) {
+	pm, provider := setupPresenceManagerTest(t)
+
+	ctx := context.Background()
+
+	// Should succeed with empty database
+	err := pm.RecoverFromDatabase(ctx, provider)
+	require.NoError(t, err)
+
+	// Verify no leases created
+	pm.mu.RLock()
+	count := len(pm.leases)
+	pm.mu.RUnlock()
+
+	assert.Equal(t, 0, count)
+}
+
+func TestPresenceManager_RecoverFromDatabase_WithNodes(t *testing.T) {
+	pm, provider := setupPresenceManagerTest(t)
+
+	ctx := context.Background()
+
+	// Create some agents in the database with different heartbeat times
+	recentHeartbeat := time.Now().Add(-1 * time.Second)
+	staleHeartbeat := time.Now().Add(-1 * time.Hour)
+
+	agent1 := &types.AgentNode{
+		ID:            "agent-recent",
+		BaseURL:       "http://localhost:8001",
+		LastHeartbeat: recentHeartbeat,
+	}
+	agent2 := &types.AgentNode{
+		ID:            "agent-stale",
+		BaseURL:       "http://localhost:8002",
+		LastHeartbeat: staleHeartbeat,
+	}
+
+	err := provider.RegisterAgent(ctx, agent1)
+	require.NoError(t, err)
+	err = provider.RegisterAgent(ctx, agent2)
+	require.NoError(t, err)
+
+	// Recover from database
+	err = pm.RecoverFromDatabase(ctx, provider)
+	require.NoError(t, err)
+
+	// Verify leases were created
+	pm.mu.RLock()
+	count := len(pm.leases)
+	lease1, exists1 := pm.leases["agent-recent"]
+	lease2, exists2 := pm.leases["agent-stale"]
+	pm.mu.RUnlock()
+
+	assert.Equal(t, 2, count, "Should have created 2 leases")
+	assert.True(t, exists1, "agent-recent lease should exist")
+	assert.True(t, exists2, "agent-stale lease should exist")
+
+	// Check that recent heartbeat is not marked offline
+	assert.False(t, lease1.MarkedOffline, "agent-recent should not be marked offline")
+
+	// Check that stale heartbeat IS marked offline
+	assert.True(t, lease2.MarkedOffline, "agent-stale should be marked offline")
+}
+
+func TestPresenceManager_RecoverFromDatabase_PreservesHeartbeatTimestamps(t *testing.T) {
+	pm, provider := setupPresenceManagerTest(t)
+
+	ctx := context.Background()
+
+	// Create an agent with a specific heartbeat time
+	heartbeatTime := time.Now().Add(-30 * time.Second)
+	agent := &types.AgentNode{
+		ID:            "agent-with-timestamp",
+		BaseURL:       "http://localhost:8001",
+		LastHeartbeat: heartbeatTime,
+	}
+
+	err := provider.RegisterAgent(ctx, agent)
+	require.NoError(t, err)
+
+	// Recover from database
+	err = pm.RecoverFromDatabase(ctx, provider)
+	require.NoError(t, err)
+
+	// Verify the lease has the correct LastSeen time
+	pm.mu.RLock()
+	lease, exists := pm.leases["agent-with-timestamp"]
+	pm.mu.RUnlock()
+
+	assert.True(t, exists, "Lease should exist")
+	assert.Equal(t, heartbeatTime.Unix(), lease.LastSeen.Unix(), "LastSeen should match LastHeartbeat from database")
+}
+
+func TestPresenceManager_RecoverFromDatabase_SkipsNilNodes(t *testing.T) {
+	pm, provider := setupPresenceManagerTest(t)
+
+	ctx := context.Background()
+
+	// Create a valid agent
+	agent := &types.AgentNode{
+		ID:            "valid-agent",
+		BaseURL:       "http://localhost:8001",
+		LastHeartbeat: time.Now(),
+	}
+
+	err := provider.RegisterAgent(ctx, agent)
+	require.NoError(t, err)
+
+	// Recover from database - should not panic on nil nodes
+	err = pm.RecoverFromDatabase(ctx, provider)
+	require.NoError(t, err)
+
+	// Verify the valid agent has a lease
+	assert.True(t, pm.HasLease("valid-agent"))
 }

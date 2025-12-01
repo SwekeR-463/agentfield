@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/Agent-Field/agentfield/control-plane/internal/core/interfaces"
+	"github.com/Agent-Field/agentfield/control-plane/internal/logger"
 	"github.com/Agent-Field/agentfield/control-plane/internal/storage"
 )
 
@@ -333,6 +334,14 @@ func (c *HTTPAgentClient) GetAgentStatus(ctx context.Context, nodeID string) (*i
 		var statusResponse interfaces.AgentStatusResponse
 		if err := json.NewDecoder(resp.Body).Decode(&statusResponse); err != nil {
 			return nil, fmt.Errorf("failed to decode response: %w", err)
+		}
+
+		// Safety check: ensure the responding agent matches the expected node ID.
+		// If node_id is missing, allow it (legacy agents) but log a warning.
+		if statusResponse.NodeID == "" {
+			logger.Logger.Warn().Str("node_id", nodeID).Msg("agent status response missing node_id; skipping identity verification")
+		} else if statusResponse.NodeID != nodeID {
+			return nil, fmt.Errorf("agent ID mismatch: expected %s, got %s", nodeID, statusResponse.NodeID)
 		}
 
 		return &statusResponse, nil

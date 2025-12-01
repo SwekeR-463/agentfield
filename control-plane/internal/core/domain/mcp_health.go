@@ -128,8 +128,10 @@ func TransformMCPHealthForMode(data *MCPHealthResponseData, mode MCPHealthMode) 
 		RunningServers: data.Summary.RunningServers,
 		TotalTools:     data.Summary.TotalTools,
 		OverallHealth:  data.Summary.OverallHealth,
-		HasIssues:      data.Summary.RunningServers < data.Summary.TotalServers || data.Summary.OverallHealth < 0.8,
 	}
+
+	hasServers := data.Summary.TotalServers > 0
+	summary.HasIssues = hasServers && (data.Summary.RunningServers < data.Summary.TotalServers || data.Summary.OverallHealth < 0.8)
 
 	// Set user-mode specific fields
 	if mode == MCPHealthModeUser {

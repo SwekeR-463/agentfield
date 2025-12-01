@@ -838,3 +838,132 @@ func TestHealthMonitor_CheckActiveAgents_NoAgents(t *testing.T) {
 
 	assert.Equal(t, 0, count)
 }
+
+func TestHealthMonitor_RecoverFromDatabase_NoNodes(t *testing.T) {
+	hm, _, _, _, _ := setupHealthMonitorTest(t)
+
+	ctx := context.Background()
+
+	// Should succeed with empty database
+	err := hm.RecoverFromDatabase(ctx)
+	require.NoError(t, err)
+
+	// Verify no agents registered
+	hm.agentsMutex.RLock()
+	count := len(hm.activeAgents)
+	hm.agentsMutex.RUnlock()
+
+	assert.Equal(t, 0, count)
+}
+
+func TestHealthMonitor_RecoverFromDatabase_WithNodes(t *testing.T) {
+	hm, provider, mockClient, _, _ := setupHealthMonitorTest(t)
+
+	ctx := context.Background()
+
+	// Create some agents in the database
+	agent1 := &types.AgentNode{
+		ID:      "agent-1",
+		BaseURL: "http://localhost:8001",
+	}
+	agent2 := &types.AgentNode{
+		ID:      "agent-2",
+		BaseURL: "http://localhost:8002",
+	}
+	agent3 := &types.AgentNode{
+		ID:      "agent-3",
+		BaseURL: "", // No BaseURL - should be skipped
+	}
+
+	err := provider.RegisterAgent(ctx, agent1)
+	require.NoError(t, err)
+	err = provider.RegisterAgent(ctx, agent2)
+	require.NoError(t, err)
+	err = provider.RegisterAgent(ctx, agent3)
+	require.NoError(t, err)
+
+	// Set up mock responses - agent-1 is running, agent-2 is not reachable
+	mockClient.setStatusResponse("agent-1", "running")
+	mockClient.setStatusError("agent-2", errors.New("connection refused"))
+
+	// Recover from database
+	err = hm.RecoverFromDatabase(ctx)
+	require.NoError(t, err)
+
+	// Verify agents were registered (except agent-3 with no BaseURL)
+	hm.agentsMutex.RLock()
+	count := len(hm.activeAgents)
+	_, agent1Exists := hm.activeAgents["agent-1"]
+	_, agent2Exists := hm.activeAgents["agent-2"]
+	_, agent3Exists := hm.activeAgents["agent-3"]
+	hm.agentsMutex.RUnlock()
+
+	assert.Equal(t, 2, count, "Should have registered 2 agents (agent-3 has no BaseURL)")
+	assert.True(t, agent1Exists, "agent-1 should be registered")
+	assert.True(t, agent2Exists, "agent-2 should be registered")
+	assert.False(t, agent3Exists, "agent-3 should not be registered (no BaseURL)")
+
+	// Verify health checks were performed
+	assert.GreaterOrEqual(t, mockClient.getStatusCallCountFor("agent-1"), 1, "Should have checked agent-1 health")
+	assert.GreaterOrEqual(t, mockClient.getStatusCallCountFor("agent-2"), 1, "Should have checked agent-2 health")
+}
+
+func TestHealthMonitor_RecoverFromDatabase_MarksUnreachableNodesInactive(t *testing.T) {
+	hm, provider, mockClient, _, _ := setupHealthMonitorTest(t)
+
+	ctx := context.Background()
+
+	// Create an agent in the database
+	agent := &types.AgentNode{
+		ID:           "unreachable-agent",
+		BaseURL:      "http://localhost:9999",
+		HealthStatus: types.HealthStatusActive, // Was active before restart
+	}
+	err := provider.RegisterAgent(ctx, agent)
+	require.NoError(t, err)
+
+	// Mock: agent is not reachable
+	mockClient.setStatusError("unreachable-agent", errors.New("connection refused"))
+
+	// Recover from database
+	err = hm.RecoverFromDatabase(ctx)
+	require.NoError(t, err)
+
+	// Verify agent was registered
+	hm.agentsMutex.RLock()
+	activeAgent, exists := hm.activeAgents["unreachable-agent"]
+	hm.agentsMutex.RUnlock()
+
+	assert.True(t, exists, "Agent should be registered")
+	assert.Equal(t, types.HealthStatusInactive, activeAgent.LastStatus, "Agent should be marked inactive after failed health check")
+}
+
+func TestHealthMonitor_RecoverFromDatabase_MarksReachableNodesActive(t *testing.T) {
+	hm, provider, mockClient, _, _ := setupHealthMonitorTest(t)
+
+	ctx := context.Background()
+
+	// Create an agent in the database
+	agent := &types.AgentNode{
+		ID:           "reachable-agent",
+		BaseURL:      "http://localhost:8001",
+		HealthStatus: types.HealthStatusInactive, // Was inactive before restart
+	}
+	err := provider.RegisterAgent(ctx, agent)
+	require.NoError(t, err)
+
+	// Mock: agent is running
+	mockClient.setStatusResponse("reachable-agent", "running")
+
+	// Recover from database
+	err = hm.RecoverFromDatabase(ctx)
+	require.NoError(t, err)
+
+	// Verify agent was registered and marked active
+	hm.agentsMutex.RLock()
+	activeAgent, exists := hm.activeAgents["reachable-agent"]
+	hm.agentsMutex.RUnlock()
+
+	assert.True(t, exists, "Agent should be registered")
+	assert.Equal(t, types.HealthStatusActive, activeAgent.LastStatus, "Agent should be marked active after successful health check")
+}

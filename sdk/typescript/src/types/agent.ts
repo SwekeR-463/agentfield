@@ -155,9 +155,10 @@ export interface AgentState {
   memoryWatchers: Array<{ pattern: string; handler: MemoryWatchHandler; scope?: string; scopeId?: string }>;
 }
 
+// Health status returned by the agent `/status` endpoint.
 export interface HealthStatus {
   status: 'ok' | 'running';
-  nodeId: string;
+  node_id: string;
   version?: string;
 }
 

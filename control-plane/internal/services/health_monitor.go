@@ -141,6 +141,43 @@ func (hm *HealthMonitor) UnregisterAgent(nodeID string) {
 	}
 }
 
+// RecoverFromDatabase loads previously registered nodes from the database
+// and performs initial health checks. This should be called on startup to
+// recover state after a control plane restart.
+func (hm *HealthMonitor) RecoverFromDatabase(ctx context.Context) error {
+	nodes, err := hm.storage.ListAgents(ctx, types.AgentFilters{})
+	if err != nil {
+		return err
+	}
+
+	if len(nodes) == 0 {
+		logger.Logger.Debug().Msg("🏥 No nodes to recover from database")
+		return nil
+	}
+
+	logger.Logger.Info().Int("count", len(nodes)).Msg("🏥 Recovering nodes from database for health monitoring")
+
+	// Register all nodes with the health monitor
+	for _, node := range nodes {
+		if node == nil || node.BaseURL == "" {
+			continue // Skip nodes without callback URL
+		}
+
+		hm.RegisterAgent(node.ID, node.BaseURL)
+	}
+
+	// Perform health checks asynchronously to avoid blocking startup
+	// The regular health monitor loop will also check these nodes
+	go func() {
+		logger.Logger.Debug().Msg("🏥 Starting async health checks for recovered nodes")
+		hm.checkActiveAgents()
+		logger.Logger.Debug().Msg("🏥 Async health checks complete")
+	}()
+
+	logger.Logger.Info().Msg("🏥 Node recovery complete")
+	return nil
+}
+
 // Start begins the HTTP-based health monitoring process
 func (hm *HealthMonitor) Start() {
 	logger.Logger.Debug().Msgf("🏥 Starting HTTP-first health monitor service (check interval: %v)",
@@ -363,8 +400,11 @@ func (hm *HealthMonitor) checkMCPHealthForNode(nodeID string) {
 			RunningServers:        newMCPSummary.RunningServers,
 			TotalTools:            newMCPSummary.TotalTools,
 			OverallHealth:         newMCPSummary.OverallHealth,
-			HasIssues:             newMCPSummary.RunningServers < newMCPSummary.TotalServers || newMCPSummary.OverallHealth < 0.8,
 			CapabilitiesAvailable: newMCPSummary.RunningServers > 0,
+		}
+
+		if newMCPSummary.TotalServers > 0 {
+			uiSummary.HasIssues = newMCPSummary.RunningServers < newMCPSummary.TotalServers || newMCPSummary.OverallHealth < 0.8
 		}
 
 		// Set service status for user mode

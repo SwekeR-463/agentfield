@@ -295,3 +295,32 @@ func TestHTTPAgentClient_GetAgentStatusHandlesMissingAgents(t *testing.T) {
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "not found")
 }
+
+func TestHTTPAgentClient_GetAgentStatusRejectsMismatchedNodeID(t *testing.T) {
+	ctx := context.Background()
+
+	// Fake agent that returns a different node_id than requested
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{
+			"status":"running",
+			"uptime":"1s",
+			"uptime_seconds":1,
+			"pid":123,
+			"version":"1.0.0",
+			"node_id":"other-agent",
+			"last_activity":"2024-01-01T00:00:00Z",
+			"resources":{}
+		}`))
+	}))
+	defer server.Close()
+
+	provider := setupTestStorage(t, ctx)
+	agentID := registerAgent(t, ctx, provider, server.URL)
+	client := NewHTTPAgentClient(provider, time.Second)
+
+	_, err := client.GetAgentStatus(ctx, agentID)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "agent ID mismatch")
+}

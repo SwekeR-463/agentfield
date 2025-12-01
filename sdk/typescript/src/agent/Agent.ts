@@ -930,7 +930,7 @@ export class Agent {
   private health(): HealthStatus {
     return {
       status: 'running',
-      nodeId: this.config.nodeId,
+      node_id: this.config.nodeId,
       version: this.config.version
     };
   }

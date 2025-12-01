@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/Agent-Field/agentfield/control-plane/internal/logger"
+	"github.com/Agent-Field/agentfield/control-plane/internal/storage"
 	"github.com/Agent-Field/agentfield/control-plane/pkg/types"
 )
 
@@ -94,6 +95,41 @@ func (pm *PresenceManager) SetExpireCallback(fn func(string)) {
 	pm.mu.Lock()
 	pm.expireCallback = fn
 	pm.mu.Unlock()
+}
+
+// RecoverFromDatabase loads previously registered nodes from the database
+// and initializes presence leases based on their LastHeartbeat timestamps.
+// This should be called on startup to recover state after a control plane restart.
+func (pm *PresenceManager) RecoverFromDatabase(ctx context.Context, storageProvider storage.StorageProvider) error {
+	nodes, err := storageProvider.ListAgents(ctx, types.AgentFilters{})
+	if err != nil {
+		return err
+	}
+
+	if len(nodes) == 0 {
+		logger.Logger.Debug().Msg("📍 No nodes to recover for presence manager")
+		return nil
+	}
+
+	logger.Logger.Info().Int("count", len(nodes)).Msg("📍 Recovering presence leases from database")
+
+	pm.mu.Lock()
+	defer pm.mu.Unlock()
+
+	for _, node := range nodes {
+		if node == nil {
+			continue
+		}
+
+		// Initialize lease based on LastHeartbeat from database
+		pm.leases[node.ID] = &presenceLease{
+			LastSeen:      node.LastHeartbeat,
+			MarkedOffline: time.Since(node.LastHeartbeat) > pm.config.HeartbeatTTL,
+		}
+	}
+
+	logger.Logger.Info().Msg("📍 Presence lease recovery complete")
+	return nil
 }
 
 func (pm *PresenceManager) loop() {

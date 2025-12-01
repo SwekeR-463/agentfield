@@ -281,10 +281,26 @@ func (s *AgentFieldServer) Start() error {
 
 	if s.presenceManager != nil {
 		go s.presenceManager.Start()
+
+		// Recover presence leases from database
+		go func() {
+			ctx := context.Background()
+			if err := s.presenceManager.RecoverFromDatabase(ctx, s.storage); err != nil {
+				logger.Logger.Error().Err(err).Msg("Failed to recover presence leases from database")
+			}
+		}()
 	}
 
 	// Start health monitor service in background
 	go s.healthMonitor.Start()
+
+	// Recover previously registered nodes and check their health
+	go func() {
+		ctx := context.Background()
+		if err := s.healthMonitor.RecoverFromDatabase(ctx); err != nil {
+			logger.Logger.Error().Err(err).Msg("Failed to recover nodes from database")
+		}
+	}()
 
 	// Start execution cleanup service in background
 	ctx := context.Background()

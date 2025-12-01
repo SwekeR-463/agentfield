@@ -402,15 +402,11 @@ func (s *UIService) OnAgentRemoved(nodeID string) {
 }
 
 // fetchMCPHealthForNode retrieves MCP health data for a specific node
-func (s *UIService) fetchMCPHealthForNode(nodeID string, mode domain.MCPHealthMode) (*domain.MCPSummaryForUI, []domain.MCPServerHealthForUI, error) {
+func (s *UIService) fetchMCPHealthForNode(ctx context.Context, nodeID string, mode domain.MCPHealthMode) (*domain.MCPSummaryForUI, []domain.MCPServerHealthForUI, error) {
 	if s.agentClient == nil {
 		// Agent client not available, return empty data
 		return nil, nil, nil
 	}
-
-	// Create context with timeout
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
 
 	// Fetch MCP health from agent
 	healthResponse, err := s.agentClient.GetMCPHealth(ctx, nodeID)
@@ -483,7 +479,10 @@ func (s *UIService) GetNodeDetailsWithMCP(ctx context.Context, nodeID string, mo
 	}
 
 	// Fetch MCP health data
-	mcpSummary, mcpServers, err := s.fetchMCPHealthForNode(nodeID, mode)
+	mcpCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	mcpSummary, mcpServers, err := s.fetchMCPHealthForNode(mcpCtx, nodeID, mode)
 	if err != nil {
 		// Log error but continue without MCP data
 		logger.Logger.Warn().Err(err).Msgf("Failed to fetch MCP health for node details %s", nodeID)
@@ -503,8 +502,17 @@ func (s *UIService) enhanceNodeSummaryWithMCP(summary *AgentNodeSummaryForUI) {
 		return
 	}
 
+	// Skip slow MCP lookups for nodes that are not currently active
+	if summary.HealthStatus != types.HealthStatusActive {
+		return
+	}
+
+	// Use a short timeout so the nodes summary endpoint stays fast
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
 	// Fetch MCP health in user mode for summary
-	mcpSummary, _, err := s.fetchMCPHealthForNode(summary.ID, domain.MCPHealthModeUser)
+	mcpSummary, _, err := s.fetchMCPHealthForNode(ctx, summary.ID, domain.MCPHealthModeUser)
 	if err != nil {
 		// Silently continue without MCP data
 		return
@@ -710,23 +718,52 @@ func (s *UIService) RefreshAllNodeStatus(ctx context.Context) (map[string]*types
 		return nil, fmt.Errorf("failed to list agents: %w", err)
 	}
 
+	// Refresh statuses concurrently to avoid request timeouts when many nodes are unreachable
 	statuses := make(map[string]*types.AgentStatus)
+	var mu sync.Mutex
+	var wg sync.WaitGroup
+
+	// Limit concurrency to avoid overwhelming downstream agent checks
+	const maxConcurrentRefresh = 5
+	sem := make(chan struct{}, maxConcurrentRefresh)
+
 	for _, node := range nodes {
-		// Refresh status for each node
-		if err := s.statusManager.RefreshAgentStatus(ctx, node.ID); err != nil {
-			logger.Logger.Error().Err(err).Str("node_id", node.ID).Msg("Failed to refresh status for node")
+		if node == nil {
 			continue
 		}
 
-		// Get the refreshed status
-		status, err := s.statusManager.GetAgentStatus(ctx, node.ID)
-		if err != nil {
-			logger.Logger.Error().Err(err).Str("node_id", node.ID).Msg("Failed to get refreshed status for node")
-			continue
-		}
+		wg.Add(1)
+		go func(nodeID string) {
+			defer wg.Done()
 
-		statuses[node.ID] = status
+			select {
+			case sem <- struct{}{}:
+				// acquired slot
+			case <-ctx.Done():
+				return
+			}
+			defer func() { <-sem }()
+
+			// Refresh status for each node
+			if err := s.statusManager.RefreshAgentStatus(ctx, nodeID); err != nil {
+				logger.Logger.Error().Err(err).Str("node_id", nodeID).Msg("Failed to refresh status for node")
+				return
+			}
+
+			// Get the refreshed status
+			status, err := s.statusManager.GetAgentStatus(ctx, nodeID)
+			if err != nil {
+				logger.Logger.Error().Err(err).Str("node_id", nodeID).Msg("Failed to get refreshed status for node")
+				return
+			}
+
+			mu.Lock()
+			statuses[nodeID] = status
+			mu.Unlock()
+		}(node.ID)
 	}
 
-	return statuses, nil
+	wg.Wait()
+
+	return statuses, ctx.Err()
 }

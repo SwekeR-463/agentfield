@@ -5,6 +5,6 @@
     "nixpacksConfigPath": "nixpacks.toml"
   },
   "deploy": {
-    "startCommand": "python -m agentfield.run"
+    "startCommand": "python main.py"
   }
 }

@@ -2,4 +2,4 @@
 cmds = ["./install.sh"]
 
 [start]
-cmd = "python -m agentfield.run"
+cmd = "python main.py"

@@ -18,20 +18,48 @@ import (
 
 // MemoryEventsHandler handles real-time memory event subscriptions.
 type MemoryEventsHandler struct {
-	storage storage.StorageProvider
+	storage        storage.StorageProvider
+	upgrader       websocket.Upgrader
+	allowedOrigins []string
 }
 
 // NewMemoryEventsHandler creates a new MemoryEventsHandler.
-func NewMemoryEventsHandler(storage storage.StorageProvider) *MemoryEventsHandler {
+func NewMemoryEventsHandler(storage storage.StorageProvider, allowedOrigins []string, requireAuth bool) *MemoryEventsHandler {
 	return &MemoryEventsHandler{
-		storage: storage,
+		storage:        storage,
+		upgrader:       createUpgrader(requireAuth, allowedOrigins),
+		allowedOrigins: allowedOrigins,
 	}
 }
 
-var upgrader = websocket.Upgrader{
-	CheckOrigin: func(r *http.Request) bool {
-		return true // Allow all origins for now
-	},
+// createUpgrader builds a WebSocket upgrader that optionally checks origins when auth is enabled.
+func createUpgrader(requireAuth bool, allowedOrigins []string) websocket.Upgrader {
+	return websocket.Upgrader{
+		CheckOrigin: func(r *http.Request) bool {
+			// In open mode keep current permissive behavior.
+			if !requireAuth {
+				return true
+			}
+
+			origin := r.Header.Get("Origin")
+			if origin == "" {
+				return false
+			}
+			return originAllowed(origin, allowedOrigins)
+		},
+	}
+}
+
+func originAllowed(origin string, allowed []string) bool {
+	if len(allowed) == 0 {
+		return false
+	}
+	for _, o := range allowed {
+		if o == "*" || strings.EqualFold(o, origin) {
+			return true
+		}
+	}
+	return false
 }
 
 func normalizePatterns(raw string) []string {
@@ -53,7 +81,7 @@ func normalizePatterns(raw string) []string {
 // WebSocketHandler handles WebSocket connections for memory events.
 func (h *MemoryEventsHandler) WebSocketHandler(c *gin.Context) {
 	ctx := c.Request.Context()
-	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
+	conn, err := h.upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		// upgrader.Upgrade automatically sends an error response, so just return
 		return
@@ -115,7 +143,11 @@ func (h *MemoryEventsHandler) SSEHandler(c *gin.Context) {
 	c.Writer.Header().Set("Content-Type", "text/event-stream")
 	c.Writer.Header().Set("Cache-Control", "no-cache")
 	c.Writer.Header().Set("Connection", "keep-alive")
-	c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+	if originAllowed("*", h.allowedOrigins) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+	} else if len(h.allowedOrigins) > 0 {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", h.allowedOrigins[0])
+	}
 
 	// Parse query parameters for filtering
 	scope := c.Query("scope")

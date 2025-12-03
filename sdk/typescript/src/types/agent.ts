@@ -20,6 +20,7 @@ export interface AgentConfig {
   devMode?: boolean;
   heartbeatIntervalMs?: number;
   defaultHeaders?: Record<string, string | number | boolean | undefined>;
+  apiKey?: string;
   mcp?: MCPConfig;
   deploymentType?: DeploymentType;
 }

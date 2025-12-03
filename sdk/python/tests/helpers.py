@@ -246,16 +246,17 @@ def create_test_agent(
     memory_store: Dict[str, Any] = {}
 
     class _FakeAgentFieldClient(DummyAgentFieldClient):
-        def __init__(self, base_url: str, async_config: Any):
+        def __init__(self, base_url: str, async_config: Any = None, api_key: Optional[str] = None):
             super().__init__()
             self.base_url = base_url
             self.api_base = f"{base_url}/api/v1"
             self.async_config = async_config
+            self.api_key = api_key
 
     def _agentfield_client_factory(
-        base_url: str, async_config: Any
+        base_url: str, async_config: Any = None, api_key: Optional[str] = None
     ) -> _FakeAgentFieldClient:
-        return _FakeAgentFieldClient(base_url, async_config)
+        return _FakeAgentFieldClient(base_url, async_config, api_key)
 
     class _FakeMemoryClient:
         def __init__(

@@ -366,6 +366,7 @@ class Agent(FastAPI):
         callback_url: Optional[str] = None,
         auto_register: bool = True,
         vc_enabled: Optional[bool] = True,
+        api_key: Optional[str] = None,
         **kwargs,
     ):
         """
@@ -405,6 +406,8 @@ class Agent(FastAPI):
             vc_enabled (bool | None, optional): Controls default VC generation policy for this agent node.
                                          True enables VCs for all reasoners/skills (default), False disables,
                                          and None defers entirely to platform defaults.
+            api_key (str, optional): API key for authenticating with the AgentField control plane.
+                                    When set, will be sent as X-API-Key header on all requests.
             **kwargs: Additional keyword arguments passed to FastAPI constructor.
 
         Example:
@@ -470,9 +473,12 @@ class Agent(FastAPI):
         # Initialize async configuration
         self.async_config = async_config or AsyncConfig.from_environment()
 
-        # Initialize AgentFieldClient with async configuration
+        # Store API key for authentication
+        self.api_key = api_key
+
+        # Initialize AgentFieldClient with async configuration and API key
         self.client = AgentFieldClient(
-            base_url=agentfield_server, async_config=self.async_config
+            base_url=agentfield_server, async_config=self.async_config, api_key=api_key
         )
         self._current_execution_context: Optional[ExecutionContext] = None
 

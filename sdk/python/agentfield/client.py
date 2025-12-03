@@ -86,10 +86,12 @@ class AgentFieldClient:
     def __init__(
         self,
         base_url: str = "http://localhost:8080",
+        api_key: Optional[str] = None,
         async_config: Optional[AsyncConfig] = None,
     ):
         self.base_url = base_url
         self.api_base = f"{base_url}/api/v1"
+        self.api_key = api_key
 
         # Async execution components
         self.async_config = async_config or AsyncConfig()
@@ -141,12 +143,19 @@ class AgentFieldClient:
                 sanitized[key] = str(value)
         return sanitized
 
+    def _get_auth_headers(self) -> Dict[str, str]:
+        """Return auth headers if configured."""
+        if not self.api_key:
+            return {}
+        return {"X-API-Key": self.api_key}
+
     def _get_headers_with_context(
         self, headers: Optional[Dict[str, str]] = None
     ) -> Dict[str, str]:
         """Merge caller headers with the active workflow context headers."""
 
-        merged = dict(headers or {})
+        merged = self._get_auth_headers()
+        merged.update(headers or {})
         context = getattr(self, "_current_workflow_context", None)
         if context and hasattr(context, "to_headers"):
             try:

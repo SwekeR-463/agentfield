@@ -6,6 +6,48 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 
 <!-- changelog:entries -->
 
+## [0.1.16] - 2025-12-03
+
+
+### Fixed
+
+- Fix(example): use IPv4 binding for documentation-chatbot
+
+The documentation chatbot was binding to `::` (IPv6 all interfaces) which
+causes Railway internal networking to fail with "connection refused" since
+Railway routes traffic over IPv4.
+
+Removed explicit host parameter to use the SDK default of `0.0.0.0` which
+binds to IPv4 all interfaces.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com> (2c1b205)
+
+- Fix(python-sdk): include API key in memory events WebSocket connections
+
+The MemoryEventClient was not including the X-API-Key header when
+connecting to the memory events WebSocket endpoint, causing 401 errors
+when the control plane has authentication enabled.
+
+Changes:
+- Add optional api_key parameter to MemoryEventClient constructor
+- Include X-API-Key header in WebSocket connect() method
+- Include X-API-Key header in history() method (both httpx and requests)
+- Pass api_key from Agent to MemoryEventClient in both instantiation sites
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com> (eda95fc)
+
+
+
+### Other
+
+- Revert "fix(example): use IPv4 binding for documentation-chatbot"
+
+This reverts commit 2c1b2053e37f4fcc968ad0805b71ef89cf9d6d9d. (576a96c)
+
 ## [0.1.15] - 2025-12-03
 
 

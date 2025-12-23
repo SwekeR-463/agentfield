@@ -6,6 +6,97 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 
 <!-- changelog:entries -->
 
+## [0.1.26-rc.1] - 2025-12-23
+
+
+### Added
+
+- Feat(observability): add webhook forwarding with dead letter queue (#102)
+
+* feat(observability): add webhook forwarding with dead letter queue
+
+Add observability webhook system for forwarding events to external endpoints:
+
+- Configurable webhook URL with optional HMAC secret and custom headers
+- Event batching with configurable size and timeout
+- Automatic retry with exponential backoff
+- Dead letter queue (DLQ) for failed events with redrive and clear capabilities
+- Filter heartbeat events and minor health score fluctuations to reduce noise
+- Settings UI page for configuration and DLQ management
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+
+* test fixes
+
+* fix(observability): node offline events now properly forwarded to webhook
+
+Fixed a race condition where node offline events were not being forwarded
+to the observability webhook. The issue was in UpdateAgentStatus which
+called GetAgentStatus (performing a live health check) to get the "old"
+status. By the time the health check completed, oldStatus == newStatus,
+so no events were broadcast.
+
+Changed to use GetAgentStatusSnapshot which returns cached/stored status
+without a live check, preserving the true "old" state for comparison.
+
+Also added observability webhook documentation to ARCHITECTURE.md.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+
+* test(status-manager): add tests for node online/offline event broadcasting
+
+Add comprehensive tests to verify status change events are properly
+broadcast when nodes transition between active and inactive states:
+
+- TestStatusManagerBroadcastsNodeOfflineEvent: Verifies NodeOffline/
+  NodeUnifiedStatusChanged events are broadcast when node goes offline
+- TestStatusManagerBroadcastsNodeOnlineEvent: Verifies NodeOnline/
+  NodeUnifiedStatusChanged events are broadcast when node comes online
+- TestStatusManagerPreservesOldStatusForEventBroadcast: Verifies the
+  old status is correctly captured before updates, ensuring the fix
+  for the GetAgentStatus race condition doesn't regress
+
+These tests guard against the race condition where UpdateAgentStatus
+was calling GetAgentStatus (with live health check) instead of
+GetAgentStatusSnapshot, causing oldStatus == newStatus.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+
+* docs: remove observability webhook documentation
+
+The observability webhook feature remains functional but will not be publicly
+documented at this time.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+
+* bugfix on ts-sdk json schema return
+
+* webhook secret fix
+
+* refine webhook events
+
+---------
+
+Co-authored-by: Claude Opus 4.5 <noreply@anthropic.com> (27cf1f7)
+
+
+
+### Other
+
+- Fix link to AI Backend blog post (fa379c6)
+
+- Update links in README for IAM documentation (3a160de)
+
+- Update README.md (fa62719)
+
 ## [0.1.25] - 2025-12-21
 
 ## [0.1.25-rc.2] - 2025-12-21

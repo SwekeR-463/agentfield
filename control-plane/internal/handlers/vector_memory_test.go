@@ -26,6 +26,17 @@ type vectorStorageStub struct {
 	searchQuery   []float32
 	searchTopK    int
 	searchFilters map[string]interface{}
+	// GetVector fields
+	getResult *types.VectorRecord
+	getErr    error
+	getScope  string
+	getScopeID string
+	getKey    string
+	// DeleteVector fields
+	deleteErr     error
+	deleteScope   string
+	deleteScopeID string
+	deleteKey     string
 }
 
 func (v *vectorStorageStub) SetMemory(ctx context.Context, memory *types.Memory) error {
@@ -68,7 +79,27 @@ func (v *vectorStorageStub) SetVector(ctx context.Context, record *types.VectorR
 	return nil
 }
 
+func (v *vectorStorageStub) GetVector(ctx context.Context, scope, scopeID, key string) (*types.VectorRecord, error) {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	v.getScope = scope
+	v.getScopeID = scopeID
+	v.getKey = key
+	if v.getErr != nil {
+		return nil, v.getErr
+	}
+	return v.getResult, nil
+}
+
 func (v *vectorStorageStub) DeleteVector(ctx context.Context, scope, scopeID, key string) error {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	v.deleteScope = scope
+	v.deleteScopeID = scopeID
+	v.deleteKey = key
+	if v.deleteErr != nil {
+		return v.deleteErr
+	}
 	return nil
 }
 
@@ -286,4 +317,184 @@ func TestSimilaritySearchHandler_StorageError(t *testing.T) {
 
 	require.Equal(t, http.StatusInternalServerError, resp.Code)
 	require.Contains(t, resp.Body.String(), "storage_error")
+}
+
+// GetVectorHandler tests
+
+func TestGetVectorHandler_ReturnsVectorWithMetadata(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	storage := &vectorStorageStub{
+		getResult: &types.VectorRecord{
+			Scope:     "session",
+			ScopeID:   "session-123",
+			Key:       "vec-key",
+			Embedding: []float32{0.1, 0.2, 0.3},
+			Metadata:  map[string]interface{}{"source": "test"},
+		},
+	}
+	router := gin.New()
+	router.GET("/vectors/:key", GetVectorHandler(storage))
+
+	req := httptest.NewRequest(http.MethodGet, "/vectors/vec-key?scope=session", nil)
+	req.Header.Set("X-Session-ID", "session-123")
+
+	resp := httptest.NewRecorder()
+	router.ServeHTTP(resp, req)
+
+	require.Equal(t, http.StatusOK, resp.Code)
+	require.Equal(t, "session", storage.getScope)
+	require.Equal(t, "session-123", storage.getScopeID)
+	require.Equal(t, "vec-key", storage.getKey)
+
+	var result types.VectorRecord
+	require.NoError(t, json.Unmarshal(resp.Body.Bytes(), &result))
+	require.Equal(t, "vec-key", result.Key)
+	require.Equal(t, "session", result.Scope)
+	require.Equal(t, []float32{0.1, 0.2, 0.3}, result.Embedding)
+	require.Equal(t, map[string]interface{}{"source": "test"}, result.Metadata)
+}
+
+func TestGetVectorHandler_NotFound(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	storage := &vectorStorageStub{
+		getResult: nil, // No vector found
+	}
+	router := gin.New()
+	router.GET("/vectors/:key", GetVectorHandler(storage))
+
+	req := httptest.NewRequest(http.MethodGet, "/vectors/nonexistent-key", nil)
+	req.Header.Set("X-Actor-ID", "actor-1")
+
+	resp := httptest.NewRecorder()
+	router.ServeHTTP(resp, req)
+
+	require.Equal(t, http.StatusNotFound, resp.Code)
+	require.Contains(t, resp.Body.String(), "not_found")
+	require.Contains(t, resp.Body.String(), "vector not found")
+}
+
+func TestGetVectorHandler_StorageError(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	storage := &vectorStorageStub{
+		getErr: errors.New("database connection lost"),
+	}
+	router := gin.New()
+	router.GET("/vectors/:key", GetVectorHandler(storage))
+
+	req := httptest.NewRequest(http.MethodGet, "/vectors/vec-key", nil)
+
+	resp := httptest.NewRecorder()
+	router.ServeHTTP(resp, req)
+
+	require.Equal(t, http.StatusInternalServerError, resp.Code)
+	require.Contains(t, resp.Body.String(), "storage_error")
+}
+
+func TestGetVectorHandler_DefaultScope(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	storage := &vectorStorageStub{
+		getResult: &types.VectorRecord{
+			Scope:     "actor",
+			ScopeID:   "actor-xyz",
+			Key:       "my-vec",
+			Embedding: []float32{0.5},
+		},
+	}
+	router := gin.New()
+	router.GET("/vectors/:key", GetVectorHandler(storage))
+
+	// No scope query param - should use default scope resolution from headers
+	req := httptest.NewRequest(http.MethodGet, "/vectors/my-vec", nil)
+	req.Header.Set("X-Actor-ID", "actor-xyz")
+
+	resp := httptest.NewRecorder()
+	router.ServeHTTP(resp, req)
+
+	require.Equal(t, http.StatusOK, resp.Code)
+	require.Equal(t, "actor", storage.getScope)
+	require.Equal(t, "actor-xyz", storage.getScopeID)
+	require.Equal(t, "my-vec", storage.getKey)
+}
+
+// DeleteVectorHandler tests
+
+func TestDeleteVectorHandler_RESTfulDelete(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	storage := &vectorStorageStub{}
+	router := gin.New()
+	router.DELETE("/vectors/:key", DeleteVectorHandler(storage))
+
+	req := httptest.NewRequest(http.MethodDelete, "/vectors/vec-to-delete?scope=workflow", nil)
+	req.Header.Set("X-Workflow-ID", "wf-42")
+
+	resp := httptest.NewRecorder()
+	router.ServeHTTP(resp, req)
+
+	require.Equal(t, http.StatusNoContent, resp.Code)
+	require.Equal(t, "workflow", storage.deleteScope)
+	require.Equal(t, "wf-42", storage.deleteScopeID)
+	require.Equal(t, "vec-to-delete", storage.deleteKey)
+}
+
+func TestDeleteVectorHandler_BackwardCompatibilityWithBody(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	storage := &vectorStorageStub{}
+	router := gin.New()
+	// Register on POST path for backward compatibility test
+	router.POST("/vectors/delete", DeleteVectorHandler(storage))
+
+	body := `{"key":"legacy-vec","scope":"session"}`
+	req := httptest.NewRequest(http.MethodPost, "/vectors/delete", strings.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-Session-ID", "session-old")
+
+	resp := httptest.NewRecorder()
+	router.ServeHTTP(resp, req)
+
+	require.Equal(t, http.StatusNoContent, resp.Code)
+	require.Equal(t, "session", storage.deleteScope)
+	require.Equal(t, "session-old", storage.deleteScopeID)
+	require.Equal(t, "legacy-vec", storage.deleteKey)
+}
+
+func TestDeleteVectorHandler_StorageError(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	storage := &vectorStorageStub{
+		deleteErr: errors.New("delete failed"),
+	}
+	router := gin.New()
+	router.DELETE("/vectors/:key", DeleteVectorHandler(storage))
+
+	req := httptest.NewRequest(http.MethodDelete, "/vectors/vec-fail", nil)
+	req.Header.Set("X-Actor-ID", "actor-1")
+
+	resp := httptest.NewRecorder()
+	router.ServeHTTP(resp, req)
+
+	require.Equal(t, http.StatusInternalServerError, resp.Code)
+	require.Contains(t, resp.Body.String(), "storage_error")
+}
+
+func TestDeleteVectorHandler_MissingKey(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	storage := &vectorStorageStub{}
+	router := gin.New()
+	// Register handler without path parameter to test missing key validation
+	router.DELETE("/vectors/", DeleteVectorHandler(storage))
+
+	req := httptest.NewRequest(http.MethodDelete, "/vectors/", nil)
+
+	resp := httptest.NewRecorder()
+	router.ServeHTTP(resp, req)
+
+	require.Equal(t, http.StatusBadRequest, resp.Code)
+	require.Contains(t, resp.Body.String(), "key is required")
 }

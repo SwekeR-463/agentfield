@@ -24,9 +24,9 @@ import (
 	"github.com/Agent-Field/agentfield/control-plane/internal/infrastructure/process"
 	infrastorage "github.com/Agent-Field/agentfield/control-plane/internal/infrastructure/storage"
 	"github.com/Agent-Field/agentfield/control-plane/internal/logger"
+	"github.com/Agent-Field/agentfield/control-plane/internal/server/middleware"
 	"github.com/Agent-Field/agentfield/control-plane/internal/services" // Services
 	"github.com/Agent-Field/agentfield/control-plane/internal/storage"
-	"github.com/Agent-Field/agentfield/control-plane/internal/server/middleware"
 	"github.com/Agent-Field/agentfield/control-plane/internal/utils"
 	"github.com/Agent-Field/agentfield/control-plane/pkg/adminpb"
 	"github.com/Agent-Field/agentfield/control-plane/pkg/types"
@@ -961,8 +961,15 @@ func (s *AgentFieldServer) setupRoutes() {
 		agentAPI.POST("/memory/get", handlers.GetMemoryHandler(s.storage))
 		agentAPI.POST("/memory/delete", handlers.DeleteMemoryHandler(s.storage))
 		agentAPI.GET("/memory/list", handlers.ListMemoryHandler(s.storage))
-		agentAPI.POST("/memory/vector/set", handlers.SetVectorHandler(s.storage))
+
+		// Vector Memory endpoints (RESTful)
+		agentAPI.POST("/memory/vector", handlers.SetVectorHandler(s.storage))
+		agentAPI.GET("/memory/vector/:key", handlers.GetVectorHandler(s.storage))
 		agentAPI.POST("/memory/vector/search", handlers.SimilaritySearchHandler(s.storage))
+		agentAPI.DELETE("/memory/vector/:key", handlers.DeleteVectorHandler(s.storage))
+
+		// Legacy Vector Memory endpoints (for backward compatibility)
+		agentAPI.POST("/memory/vector/set", handlers.SetVectorHandler(s.storage))
 		agentAPI.POST("/memory/vector/delete", handlers.DeleteVectorHandler(s.storage))
 		agentAPI.DELETE("/memory/vector/namespace", handlers.DeleteNamespaceVectorsHandler(s.storage))
 

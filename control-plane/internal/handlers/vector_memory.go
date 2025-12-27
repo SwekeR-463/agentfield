@@ -85,21 +85,77 @@ func SetVectorHandler(storage MemoryStorage) gin.HandlerFunc {
 	}
 }
 
-// DeleteVectorHandler removes a vector by key.
-func DeleteVectorHandler(storage MemoryStorage) gin.HandlerFunc {
+// GetVectorHandler retrieves a vector by key.
+func GetVectorHandler(storage MemoryStorage) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var req DeleteVectorRequest
-		if err := c.ShouldBindJSON(&req); err != nil {
+		key := c.Param("key")
+		if key == "" {
 			c.JSON(http.StatusBadRequest, ErrorResponse{
 				Error:   "invalid_request",
-				Message: err.Error(),
+				Message: "key is required",
 				Code:    http.StatusBadRequest,
 			})
 			return
 		}
 
-		scope, scopeID := resolveScope(c, req.Scope)
-		if err := storage.DeleteVector(c.Request.Context(), scope, scopeID, req.Key); err != nil {
+		scopeParam := c.Query("scope")
+		var scopePtr *string
+		if scopeParam != "" {
+			scopePtr = &scopeParam
+		}
+
+		scope, scopeID := resolveScope(c, scopePtr)
+		record, err := storage.GetVector(c.Request.Context(), scope, scopeID, key)
+		if err != nil {
+			logger.Logger.Error().Err(err).Msg("failed to get vector")
+			c.JSON(http.StatusInternalServerError, ErrorResponse{
+				Error:   "storage_error",
+				Message: err.Error(),
+				Code:    http.StatusInternalServerError,
+			})
+			return
+		}
+
+		if record == nil {
+			c.JSON(http.StatusNotFound, ErrorResponse{
+				Error:   "not_found",
+				Message: "vector not found",
+				Code:    http.StatusNotFound,
+			})
+			return
+		}
+
+		c.JSON(http.StatusOK, record)
+	}
+}
+
+// DeleteVectorHandler removes a vector by key.
+func DeleteVectorHandler(storage MemoryStorage) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		key := c.Param("key")
+		if key == "" {
+			// Fallback to body for backward compatibility if needed, but the plan says RESTful.
+			var req DeleteVectorRequest
+			if err := c.ShouldBindJSON(&req); err == nil {
+				key = req.Key
+			} else {
+				c.JSON(http.StatusBadRequest, ErrorResponse{
+					Error:   "invalid_request",
+					Message: "key is required",
+					Code:    http.StatusBadRequest,
+				})
+				return
+			}
+		}
+
+		scopeParam := c.Query("scope")
+		var scopePtr *string
+		if scopeParam != "" {
+			scopePtr = &scopeParam
+		}
+
+		scope, scopeID := resolveScope(c, scopePtr)
+		if err := storage.DeleteVector(c.Request.Context(), scope, scopeID, key); err != nil {
 			logger.Logger.Error().Err(err).Msg("failed to delete vector")
 			c.JSON(http.StatusInternalServerError, ErrorResponse{
 				Error:   "storage_error",
@@ -109,7 +165,7 @@ func DeleteVectorHandler(storage MemoryStorage) gin.HandlerFunc {
 			return
 		}
 
-		c.JSON(http.StatusOK, gin.H{"status": "deleted"})
+		c.Status(http.StatusNoContent)
 	}
 }
 

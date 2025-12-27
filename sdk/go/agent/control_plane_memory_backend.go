@@ -182,6 +182,178 @@ func (b *ControlPlaneMemoryBackend) List(scope MemoryScope, scopeID string) ([]s
 	return keys, nil
 }
 
+func (b *ControlPlaneMemoryBackend) SetVector(scope MemoryScope, scopeID, key string, embedding []float64, metadata map[string]any) error {
+	endpoint, err := url.JoinPath(b.baseURL, "/api/v1/memory/vector")
+	if err != nil {
+		return err
+	}
+
+	// Convert float64 to float32 for the API
+	embeddingF32 := make([]float32, len(embedding))
+	for i, v := range embedding {
+		embeddingF32[i] = float32(v)
+	}
+
+	body := map[string]any{
+		"key":       key,
+		"embedding": embeddingF32,
+		"metadata":  metadata,
+		"scope":     b.apiScope(scope),
+	}
+	req, err := http.NewRequest(http.MethodPost, endpoint, mustJSONReader(body))
+	if err != nil {
+		return err
+	}
+	b.applyHeaders(req, scope, scopeID)
+
+	resp, err := b.httpClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		msg, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("vector memory set failed: status=%d body=%s", resp.StatusCode, strings.TrimSpace(string(msg)))
+	}
+	return nil
+}
+
+func (b *ControlPlaneMemoryBackend) GetVector(scope MemoryScope, scopeID, key string) ([]float64, map[string]any, bool, error) {
+	endpoint, err := url.JoinPath(b.baseURL, "/api/v1/memory/vector", url.PathEscape(key))
+	if err != nil {
+		return nil, nil, false, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, endpoint+"?scope="+url.QueryEscape(b.apiScope(scope)), nil)
+	if err != nil {
+		return nil, nil, false, err
+	}
+	b.applyHeaders(req, scope, scopeID)
+
+	resp, err := b.httpClient.Do(req)
+	if err != nil {
+		return nil, nil, false, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusNotFound {
+		return nil, nil, false, nil
+	}
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		msg, _ := io.ReadAll(resp.Body)
+		return nil, nil, false, fmt.Errorf("vector memory get failed: status=%d body=%s", resp.StatusCode, strings.TrimSpace(string(msg)))
+	}
+
+	var res struct {
+		Embedding []float32      `json:"embedding"`
+		Metadata  map[string]any `json:"metadata"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
+		return nil, nil, false, err
+	}
+
+	// Convert float32 back to float64
+	embeddingF64 := make([]float64, len(res.Embedding))
+	for i, v := range res.Embedding {
+		embeddingF64[i] = float64(v)
+	}
+
+	return embeddingF64, res.Metadata, true, nil
+}
+
+func (b *ControlPlaneMemoryBackend) SearchVector(scope MemoryScope, scopeID string, embedding []float64, opts SearchOptions) ([]VectorSearchResult, error) {
+	endpoint, err := url.JoinPath(b.baseURL, "/api/v1/memory/vector/search")
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert float64 to float32
+	embeddingF32 := make([]float32, len(embedding))
+	for i, v := range embedding {
+		embeddingF32[i] = float32(v)
+	}
+
+	body := map[string]any{
+		"query_embedding": embeddingF32,
+		"top_k":           opts.Limit,
+		"threshold":       opts.Threshold,
+		"filters":         opts.Filters,
+		"scope":           b.apiScope(scope),
+	}
+	if opts.Scope != "" {
+		body["scope"] = b.apiScope(opts.Scope)
+	}
+
+	req, err := http.NewRequest(http.MethodPost, endpoint, mustJSONReader(body))
+	if err != nil {
+		return nil, err
+	}
+	b.applyHeaders(req, scope, scopeID)
+
+	resp, err := b.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		msg, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("vector memory search failed: status=%d body=%s", resp.StatusCode, strings.TrimSpace(string(msg)))
+	}
+
+	var apiResults []struct {
+		Key      string         `json:"key"`
+		Score    float64        `json:"score"`
+		Metadata map[string]any `json:"metadata"`
+		Scope    string         `json:"scope"`
+		ScopeID  string         `json:"scope_id"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&apiResults); err != nil {
+		return nil, err
+	}
+
+	results := make([]VectorSearchResult, len(apiResults))
+	for i, r := range apiResults {
+		results[i] = VectorSearchResult{
+			Key:      r.Key,
+			Score:    r.Score,
+			Metadata: r.Metadata,
+			Scope:    MemoryScope(r.Scope),
+			ScopeID:  r.ScopeID,
+		}
+	}
+	return results, nil
+}
+
+func (b *ControlPlaneMemoryBackend) DeleteVector(scope MemoryScope, scopeID, key string) error {
+	endpoint, err := url.JoinPath(b.baseURL, "/api/v1/memory/vector", url.PathEscape(key))
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, endpoint+"?scope="+url.QueryEscape(b.apiScope(scope)), nil)
+	if err != nil {
+		return err
+	}
+	b.applyHeaders(req, scope, scopeID)
+
+	resp, err := b.httpClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusNotFound {
+		return nil
+	}
+	if resp.StatusCode != http.StatusNoContent && (resp.StatusCode < 200 || resp.StatusCode >= 300) {
+		msg, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("vector memory delete failed: status=%d body=%s", resp.StatusCode, strings.TrimSpace(string(msg)))
+	}
+	return nil
+}
+
 func (b *ControlPlaneMemoryBackend) applyHeaders(req *http.Request, scope MemoryScope, scopeID string) {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")

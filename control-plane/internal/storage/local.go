@@ -3781,6 +3781,17 @@ func (ls *LocalStorage) SetVector(ctx context.Context, record *types.VectorRecor
 	return ls.vectorStore.Set(ctx, record)
 }
 
+// GetVector retrieves a vector embedding by key.
+func (ls *LocalStorage) GetVector(ctx context.Context, scope, scopeID, key string) (*types.VectorRecord, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	if err := ls.requireVectorStore(); err != nil {
+		return nil, err
+	}
+	return ls.vectorStore.Get(ctx, scope, scopeID, key)
+}
+
 // DeleteVector removes a stored vector embedding.
 func (ls *LocalStorage) DeleteVector(ctx context.Context, scope, scopeID, key string) error {
 	if err := ctx.Err(); err != nil {

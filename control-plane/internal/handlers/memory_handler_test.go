@@ -100,6 +100,10 @@ func (m *memoryStorageStub) SetVector(ctx context.Context, record *types.VectorR
 	return nil
 }
 
+func (m *memoryStorageStub) GetVector(ctx context.Context, scope, scopeID, key string) (*types.VectorRecord, error) {
+	return nil, nil
+}
+
 func (m *memoryStorageStub) DeleteVector(ctx context.Context, scope, scopeID, key string) error {
 	return nil
 }

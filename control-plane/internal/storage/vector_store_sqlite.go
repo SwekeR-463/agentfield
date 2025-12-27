@@ -65,6 +65,51 @@ func (s *sqliteVectorStore) Set(ctx context.Context, record *types.VectorRecord)
 	return nil
 }
 
+func (s *sqliteVectorStore) Get(ctx context.Context, scope, scopeID, key string) (*types.VectorRecord, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+
+	var embeddingBlob []byte
+	var metadataRaw sql.NullString
+	var createdAt, updatedAt time.Time
+
+	err := s.db.QueryRowContext(ctx, `
+		SELECT embedding, metadata, created_at, updated_at
+		FROM memory_vectors
+		WHERE scope = ? AND scope_id = ? AND key = ?
+	`, scope, scopeID, key).Scan(&embeddingBlob, &metadataRaw, &createdAt, &updatedAt)
+
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, fmt.Errorf("get vector: %w", err)
+	}
+
+	embedding, err := decodeEmbedding(embeddingBlob)
+	if err != nil {
+		return nil, fmt.Errorf("decode embedding: %w", err)
+	}
+
+	metadata := map[string]interface{}{}
+	if metadataRaw.Valid && metadataRaw.String != "" {
+		if err := json.Unmarshal([]byte(metadataRaw.String), &metadata); err != nil {
+			return nil, fmt.Errorf("unmarshal metadata: %w", err)
+		}
+	}
+
+	return &types.VectorRecord{
+		Scope:     scope,
+		ScopeID:   scopeID,
+		Key:       key,
+		Embedding: embedding,
+		Metadata:  metadata,
+		CreatedAt: createdAt,
+		UpdatedAt: updatedAt,
+	}, nil
+}
+
 func (s *sqliteVectorStore) Delete(ctx context.Context, scope, scopeID, key string) error {
 	if err := ctx.Err(); err != nil {
 		return err

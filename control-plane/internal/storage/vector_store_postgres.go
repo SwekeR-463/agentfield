@@ -2,10 +2,12 @@ package storage
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/Agent-Field/agentfield/control-plane/pkg/types"
 )
@@ -61,6 +63,59 @@ func (s *postgresVectorStore) Set(ctx context.Context, record *types.VectorRecor
 		return fmt.Errorf("set postgres vector: %w", err)
 	}
 	return nil
+}
+
+func (s *postgresVectorStore) Get(ctx context.Context, scope, scopeID, key string) (*types.VectorRecord, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+
+	query := `
+		SELECT embedding::text, metadata, created_at, updated_at
+		FROM memory_vectors
+		WHERE scope = ? AND scope_id = ? AND key = ?
+	`
+
+	var embeddingStr string
+	var metadataRaw []byte
+	var createdAt, updatedAt time.Time
+
+	err := s.db.QueryRowContext(ctx, query, scope, scopeID, key).Scan(&embeddingStr, &metadataRaw, &createdAt, &updatedAt)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, fmt.Errorf("get postgres vector: %w", err)
+	}
+
+	// Parse postgres vector literal like "[0.1,0.2,0.3]"
+	embeddingStr = strings.Trim(embeddingStr, "[]")
+	parts := strings.Split(embeddingStr, ",")
+	embedding := make([]float32, len(parts))
+	for i, p := range parts {
+		v, err := strconv.ParseFloat(strings.TrimSpace(p), 32)
+		if err != nil {
+			return nil, fmt.Errorf("parse embedding element: %w", err)
+		}
+		embedding[i] = float32(v)
+	}
+
+	record := &types.VectorRecord{
+		Scope:     scope,
+		ScopeID:   scopeID,
+		Key:       key,
+		Embedding: embedding,
+		CreatedAt: createdAt,
+		UpdatedAt: updatedAt,
+	}
+
+	if len(metadataRaw) > 0 {
+		if err := json.Unmarshal(metadataRaw, &record.Metadata); err != nil {
+			return nil, fmt.Errorf("unmarshal metadata: %w", err)
+		}
+	}
+
+	return record, nil
 }
 
 func (s *postgresVectorStore) Delete(ctx context.Context, scope, scopeID, key string) error {

@@ -154,6 +154,9 @@ func (s *stubStorage) ListMemory(ctx context.Context, scope, scopeID string) ([]
 	return nil, nil
 }
 func (s *stubStorage) SetVector(ctx context.Context, record *types.VectorRecord) error    { return nil }
+func (s *stubStorage) GetVector(ctx context.Context, scope, scopeID, key string) (*types.VectorRecord, error) {
+	return nil, nil
+}
 func (s *stubStorage) DeleteVector(ctx context.Context, scope, scopeID, key string) error { return nil }
 func (s *stubStorage) DeleteVectorsByPrefix(ctx context.Context, scope, scopeID, prefix string) (int, error) {
 	return 0, nil

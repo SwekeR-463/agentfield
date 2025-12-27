@@ -21,6 +21,7 @@ type MemoryStorage interface {
 	StoreEvent(ctx context.Context, event *types.MemoryChangeEvent) error
 	PublishMemoryChange(ctx context.Context, event types.MemoryChangeEvent) error
 	SetVector(ctx context.Context, record *types.VectorRecord) error
+	GetVector(ctx context.Context, scope, scopeID, key string) (*types.VectorRecord, error)
 	DeleteVector(ctx context.Context, scope, scopeID, key string) error
 	DeleteVectorsByPrefix(ctx context.Context, scope, scopeID, prefix string) (int, error)
 	SimilaritySearch(ctx context.Context, scope, scopeID string, queryEmbedding []float32, topK int, filters map[string]interface{}) ([]*types.VectorSearchResult, error)

@@ -15,6 +15,7 @@ import (
 
 type vectorStore interface {
 	Set(ctx context.Context, record *types.VectorRecord) error
+	Get(ctx context.Context, scope, scopeID, key string) (*types.VectorRecord, error)
 	Delete(ctx context.Context, scope, scopeID, key string) error
 	DeleteByPrefix(ctx context.Context, scope, scopeID, prefix string) (int, error)
 	Search(ctx context.Context, scope, scopeID string, query []float32, topK int, filters map[string]interface{}) ([]*types.VectorSearchResult, error)
